@@ -1,8 +1,10 @@
+from django.db.models import Sum
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from ..serializers import InvoiceSerializer
 from ..models import Invoice, Person
 from rest_framework.decorators import action
+from django.utils.timezone import now
 
 
 class InvoiceViewSet(viewsets.ModelViewSet):
@@ -67,3 +69,18 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         # Serializujeme faktury včetně buyer a seller
         serializer = self.get_serializer(invoices, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], url_path=r'statistics')
+    def general_statistics(self, request):
+        current_year = now().year
+
+        queryset = Invoice.objects.all()
+        current_year_sum = queryset.filter(issued__year=current_year).aggregate(sum=Sum('price'))['sum'] or 0
+        all_time_sum = queryset.aggregate(sum=Sum('price'))['sum'] or 0
+        invoices_count = queryset.count()
+
+        return Response({
+            "currentYearSum": float(current_year_sum),
+            "allTimeSum": float(all_time_sum),
+            "invoicesCount": invoices_count
+        }, status=status.HTTP_200_OK)

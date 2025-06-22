@@ -1,8 +1,10 @@
+from django.db.models import Sum
 from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from ..serializers import PersonSerializer
-from ..serializers import Person
+from ..serializers import Person, Invoice
 
 
 class PersonViewSet(viewsets.ModelViewSet):
@@ -30,3 +32,18 @@ class PersonViewSet(viewsets.ModelViewSet):
         instance.hidden = True
         instance.save(update_fields=["hidden"])
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=['get'], url_path='statistics')
+    def statistics(self, request):
+        persons = Person.objects.all()
+        statistics = []
+
+        for person in persons:
+            revenue = Invoice.objects.filter(seller=person).aggregate(sum=Sum('price'))['sum'] or 0
+            statistics.append({
+                "personId": person.id,
+                "personName": person.name,
+                "revenue": float(revenue)
+            })
+
+        return Response(statistics, status=status.HTTP_200_OK)
