@@ -34,8 +34,8 @@ class PersonViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=['get'], url_path='statistics')
-    def statistics(self, request):
-        persons = Person.objects.all()
+    def person_statistics(self, _):
+        persons = Person.objects.filter(hidden=False)
         statistics = []
 
         for person in persons:

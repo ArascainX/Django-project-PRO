@@ -7,6 +7,7 @@ class Countries(models.TextChoices):
 
 
 class Person(models.Model):
+    objects = None
     name = models.CharField(max_length=100, db_index=True)
     identificationNumber = models.CharField(max_length=50, db_index=True)
     taxNumber = models.CharField(max_length=50, blank=True, null=True)
@@ -27,6 +28,7 @@ class Person(models.Model):
     hidden = models.BooleanField(default=False, db_index=True)
 
 class Invoice(models.Model):
+    objects = None
     invoiceNumber = models.CharField(max_length=50, unique=True)
 
     seller = models.ForeignKey(Person, on_delete=models.PROTECT, related_name='invoices_sold')
