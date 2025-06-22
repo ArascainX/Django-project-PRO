@@ -1,0 +1,53 @@
+from rest_framework import viewsets, status
+from rest_framework.response import Response
+from ..serializers import InvoiceSerializer
+from ..models import Invoice, Person
+from rest_framework.decorators import action
+
+
+class InvoiceViewSet(viewsets.ModelViewSet):
+    queryset = Invoice.objects.all()
+    serializer_class = InvoiceSerializer
+
+# Filtrace
+    @action(detail=False, methods=['get'])
+    def filter(self, request):
+        queryset = Invoice.objects.all()
+        params = request.query_params
+
+        if buyer_id := params.get('buyerID'):
+            queryset = queryset.filter(buyer__id=buyer_id)
+
+        if seller_id := params.get('sellerID'):
+            queryset = queryset.filter(seller__id=seller_id)
+
+        if product := params.get('product'):
+            queryset = queryset.filter(product__icontains=product)
+
+        if min_price := params.get('minPrice'):
+            queryset = queryset.filter(price__gte=min_price)
+
+        if max_price := params.get('maxPrice'):
+            queryset = queryset.filter(price__lte=max_price)
+
+        if limit := params.get('limit'):
+            queryset = queryset[:int(limit)]
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'], url_path=r'identification/(?P<ico>\w+)/sales')
+    def sales_by_ico(self, request, ico=None):
+        # Získáme všechny osoby se zadaným IČO
+        sellers = Person.objects.filter(identificationNumber=ico)
+
+        # Pokud žádná osoba s tímto IČ neexistuje, vrátíme 404
+        if not sellers.exists():
+            return Response({"detail": "Osoba s tímto IČ nebyla nalezena."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Získáme všechny faktury, kde seller je v seznamu osob s daným IČ
+        invoices = Invoice.objects.filter(seller__in=sellers)
+
+        # Serializujeme faktury včetně buyer a seller
+        serializer = self.get_serializer(invoices, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
