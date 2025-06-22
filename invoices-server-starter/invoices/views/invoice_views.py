@@ -37,8 +37,8 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @action(detail=False, methods=['get'], url_path=r'identification/(?P<ico>\w+)/sales')
-    def sales_by_ico(self, request, ico=None):
-        # Získáme všechny osoby se zadaným IČO
+    def sales_by_ico(self, _, ico=None):
+        # Získáme všechny osoby se zadaným IČO jako prodávající
         sellers = Person.objects.filter(identificationNumber=ico)
 
         # Pokud žádná osoba s tímto IČ neexistuje, vrátíme 404
@@ -47,6 +47,22 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 
         # Získáme všechny faktury, kde seller je v seznamu osob s daným IČ
         invoices = Invoice.objects.filter(seller__in=sellers)
+
+        # Serializujeme faktury včetně buyer a seller
+        serializer = self.get_serializer(invoices, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], url_path=r'identification/(?P<ico>\w+)/purchases')
+    def purchases_by_ico(self, _, ico=None):
+        # Získáme všechny osoby se zadaným IČO jako kupující
+        buyers = Person.objects.filter(identificationNumber=ico)
+
+        # Pokud žádná osoba s tímto IČ neexistuje, vrátíme 404
+        if not buyers.exists():
+            return Response({"detail": "Osoba s tímto IČ nebyla nalezena."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Získáme všechny faktury, kde buyer je v seznamu osob s daným IČ
+        invoices = Invoice.objects.filter(buyer__in=buyers)
 
         # Serializujeme faktury včetně buyer a seller
         serializer = self.get_serializer(invoices, many=True)
