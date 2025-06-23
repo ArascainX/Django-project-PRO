@@ -20,11 +20,16 @@ const InvoiceForm = () => {
     buyer: "",
     seller: ""
   });
+  const [buyerName, setBuyerName] = useState("");
+  const [sellerName, setSellerName] = useState("");
+  const [people, setPeople] = useState([]);
   const [sentState, setSent] = useState(false);
   const [successState, setSuccess] = useState(false);
-  const [errorState, setError] = useState(null);
+  const [errorState, setErrorState] = useState(null);
 
   useEffect(() => {
+    apiGet("/api/persons").then(setPeople);
+
     if (id) {
       apiGet("/api/invoices/" + id).then((data) => {
         setInvoice({
@@ -32,9 +37,19 @@ const InvoiceForm = () => {
           issued: new Date(data.issued),
           dueDate: new Date(data.dueDate)
         });
+        fetchPersonName(data.buyer, setBuyerName);
+        fetchPersonName(data.seller, setSellerName);
       });
     }
   }, [id]);
+
+  const fetchPersonName = (personId, setNameFn) => {
+    if (personId) {
+      apiGet("/api/persons/" + personId)
+        .then((data) => setNameFn(data.name))
+        .catch(() => setNameFn(""));
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -43,6 +58,7 @@ const InvoiceForm = () => {
       issued: invoice.issued.toISOString().split("T")[0],
       dueDate: invoice.dueDate.toISOString().split("T")[0]
     };
+
     const action = id ? apiPut("/api/invoices/" + id, payload) : apiPost("/api/invoices", payload);
 
     action
@@ -53,7 +69,7 @@ const InvoiceForm = () => {
       })
       .catch((error) => {
         console.error(error.message);
-        setError(error.message);
+        setErrorState(error.message);
         setSent(true);
         setSuccess(false);
       });
@@ -70,18 +86,52 @@ const InvoiceForm = () => {
           text={successState ? "Faktura byla úspěšně uložena." : ""}
         />
       )}
-      <form onSubmit={handleSubmit}>
         <InputField
-          required={true}
-          type="text"
-          name="invoiceNumber"
-          label="Číslo faktury"
-          value={invoice.invoiceNumber}
-          handleChange={(e) => setInvoice({ ...invoice, invoiceNumber: e.target.value })}
-        />
+        required={true}
+        type="text"
+        name="invoiceNumber"
+        label="Číslo faktury"
+        value={invoice.invoiceNumber}
+        handleChange={(e) => setInvoice({ ...invoice, invoiceNumber: e.target.value })}
+      />
+      <form onSubmit={handleSubmit}>
+        <div className="mb-3">
+          <label className="form-label">Prodávající</label>
+          <select
+            className="form-select"
+            value={invoice.seller}
+            onChange={(e) => {
+              setInvoice({ ...invoice, seller: e.target.value });
+              fetchPersonName(e.target.value, setSellerName);
+            }}
+            required
+          >
+            <option value="">-- Vyberte osobu --</option>
+            {people.map((p) => (
+              <option key={p._id} value={p._id}>{p.name}</option>
+            ))}
+          </select>
+        </div>
 
-        <div className="form-group">
-          <label>Datum vystavení</label>
+        <div className="mb-3">
+          <label className="form-label">Kupující</label>
+          <select
+            className="form-select"
+            value={invoice.buyer}
+            onChange={(e) => {
+              setInvoice({ ...invoice, buyer: e.target.value });
+              fetchPersonName(e.target.value, setBuyerName);
+            }}
+            required
+          >
+            <option value="">-- Vyberte osobu --</option>
+            {people.map((p) => (
+              <option key={p._id} value={p._id}>{p.name}</option>
+            ))}
+          </select>
+        </div>
+        <div className="mb-3">
+          <label className="form-label">Datum vystavení</label>
           <DatePicker
             selected={invoice.issued}
             onChange={(date) => setInvoice({ ...invoice, issued: date })}
@@ -90,8 +140,8 @@ const InvoiceForm = () => {
           />
         </div>
 
-        <div className="form-group">
-          <label>Datum splatnosti</label>
+        <div className="mb-3">
+          <label className="form-label">Datum splatnosti</label>
           <DatePicker
             selected={invoice.dueDate}
             onChange={(date) => setInvoice({ ...invoice, dueDate: date })}
@@ -134,24 +184,6 @@ const InvoiceForm = () => {
           label="Poznámka"
           value={invoice.note}
           handleChange={(e) => setInvoice({ ...invoice, note: e.target.value })}
-        />
-
-        <InputField
-          required={true}
-          type="number"
-          name="seller"
-          label="ID prodávajícího"
-          value={invoice.seller}
-          handleChange={(e) => setInvoice({ ...invoice, seller: e.target.value })}
-        />
-
-        <InputField
-          required={true}
-          type="number"
-          name="buyer"
-          label="ID kupujícího"
-          value={invoice.buyer}
-          handleChange={(e) => setInvoice({ ...invoice, buyer: e.target.value })}
         />
 
         <input type="submit" className="btn btn-primary" value="Uložit" />

@@ -13,7 +13,8 @@ import PersonDetail from "./persons/PersonDetail";
 import PersonForm from "./persons/PersonForm";
 import InvoiceIndex from "./invoices/InvoiceIndex"; 
 import InvoiceDetail from "./invoices/InvoiceDetail";
-import InvoiceForm from "./invoices/InvoiceForm";
+import InvoiceForm from "./invoices/InvoiceForm"
+
 
 export function App() {
   return (
