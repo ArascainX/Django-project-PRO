@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from .models import Person,Invoice
 
-
 class PersonSerializer(serializers.ModelSerializer):
     _id = serializers.IntegerField(source="id", read_only=True)
     identificationNumber = serializers.CharField(default=None)
@@ -18,7 +17,6 @@ class InvoiceSerializer(serializers.ModelSerializer):
     _id = serializers.IntegerField(source="id", read_only=True)
     seller = serializers.PrimaryKeyRelatedField(queryset=Person.objects.all())
     buyer = serializers.PrimaryKeyRelatedField(queryset=Person.objects.all())
-
 
     class Meta:
         model = Invoice

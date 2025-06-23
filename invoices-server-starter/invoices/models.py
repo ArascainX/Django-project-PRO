@@ -34,10 +34,10 @@ class Invoice(models.Model):
     seller = models.ForeignKey(Person, on_delete=models.PROTECT, related_name='invoices_sold')
     buyer = models.ForeignKey(Person, on_delete=models.PROTECT, related_name='invoices_bought')
 
-    issued = models.DateField()  # "2023-07-23"
-    dueDate = models.DateField()  # "2023-07-30"
-    product = models.CharField(max_length=255)  # "Článek"
-    price = models.DecimalField(max_digits=10, decimal_places=2)  # 100
-    vat = models.DecimalField(max_digits=5, decimal_places=2)  # 21%
-    note = models.TextField(blank=True, null=True)  # "Tvorba Spring článků"
+    issued = models.DateField()
+    dueDate = models.DateField()
+    product = models.CharField(max_length=255)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    vat = models.DecimalField(max_digits=5, decimal_places=2)
+    note = models.TextField(blank=True, null=True)
 
