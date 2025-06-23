@@ -29,6 +29,8 @@ import Country from "./Country";
 const PersonDetail = () => {
     const {id} = useParams();
     const [person, setPerson] = useState({});
+    const [invoices, setInvoices] = useState([]);
+    const [invoiceType, setInvoiceType] = useState(""); // 'sales' nebo 'purchases
 
     useEffect(() => {
         // TODO: Add HTTP req.
@@ -42,6 +44,20 @@ const PersonDetail = () => {
 
         }, [id]);
     const country = Country.CZECHIA === person.country ? "Česká republika" : "Slovensko";
+
+      const handleSalesClick = () => {
+    getSalesByIco(person.identificationNumber).then((data) => {
+      setInvoices(data);
+      setInvoiceType("sales");
+    });
+  };
+
+  const handlePurchasesClick = () => {
+    getPurchasesByIco(person.identificationNumber).then((data) => {
+      setInvoices(data);
+      setInvoiceType("purchases");
+    });
+  };
 
     return (
         <>
@@ -80,9 +96,47 @@ const PersonDetail = () => {
                     <br/>
                     {person.note}
                 </p>
-            </div>
-        </>
-    );
+                
+        {/* Tlačítka pro faktury */}
+        <div className="mt-4 flex gap-3">
+          <button onClick={handleSalesClick} className="btn btn-sm btn-info">
+            Vystavené faktury
+          </button>
+          <button onClick={handlePurchasesClick} className="btn btn-sm btn-warning">
+            Přijaté faktury
+          </button>
+        </div>
+
+        {invoiceType && (
+          <div className="mt-6">
+            <h4 className="text-lg font-bold mb-2">
+              {invoiceType === "sales" ? "Vystavené" : "Přijaté"} faktury
+            </h4>
+            {invoices.length === 0 ? (
+              <p>Žádné faktury nenalezeny.</p>
+            ) : (
+              <ul className="space-y-2">
+                {invoices.map((invoice) => (
+                  <li key={invoice._id} className="border p-3 rounded shadow-sm">
+                    <strong>Číslo faktury:</strong> {invoice.invoiceNumber}
+                    <br />
+                    <strong>Produkt:</strong> {invoice.product}
+                    <br />
+                    <strong>Cena:</strong> {invoice.price} Kč
+                    <br />
+                    <strong>Datum vystavení:</strong> {invoice.issued}
+                    <br />
+                    <strong>Odběratel:</strong> {invoice.buyer?.name || "-"}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+      </div>
+    </>
+  );
 };
 
 export default PersonDetail;
+

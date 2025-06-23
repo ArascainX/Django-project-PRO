@@ -80,3 +80,6 @@ export const apiDelete = (url) => {
 
     return fetchData(url, requestOptions);
 };
+
+export const getSalesByIco = (ico) => apiGet(`/api/identification/${ico}/sales`);
+export const getPurchasesByIco = (ico) => apiGet(`/api/identification/${ico}/purchases`);
