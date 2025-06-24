@@ -2,16 +2,18 @@ import React, { useEffect, useState } from "react";
 import { apiGet, apiDelete } from "../utils/api";
 import InvoiceTable from "./InvoiceTable";
 
+const defaultFilters = {
+    buyerID: "",
+    sellerID: "",
+    product: "",
+    minPrice: "",
+    maxPrice: "",
+    limit: ""
+};
+
 const InvoiceIndex = () => {
     const [invoices, setInvoices] = useState([]);
-    const [filters, setFilters] = useState({
-        buyerID: "",
-        sellerID: "",
-        product: "",
-        minPrice: "",
-        maxPrice: "",
-        limit: ""
-    });
+    const [filters, setFilters] = useState(defaultFilters);
 
     const fetchInvoices = () => {
         apiGet("/api/invoices/filter", filters)
@@ -26,7 +28,7 @@ const InvoiceIndex = () => {
     useEffect(() => {
         fetchInvoices();
         // eslint-disable-next-line
-    }, []);
+    }, [filters]);
 
     const handleFilterChange = (e) => {
         setFilters({ ...filters, [e.target.name]: e.target.value });
@@ -37,11 +39,15 @@ const InvoiceIndex = () => {
         fetchInvoices();
     };
 
+    const handleShowAll = () => {
+        setFilters(defaultFilters);
+    };
+
     const deleteInvoice = (id) => {
         if (window.confirm("Opravdu chcete fakturu odstranit?")) {
             apiDelete("/api/invoices/" + id)
                 .then(() => {
-                    fetchInvoices(); // obnovíme seznam
+                    fetchInvoices();
                 })
                 .catch((error) => {
                     console.error("Chyba při mazání faktury:", error);
@@ -51,7 +57,7 @@ const InvoiceIndex = () => {
 
     return (
         <div>
-            <h1>Seznam faktur</h1>
+            <h1 className="mb-2">Seznam faktur</h1>
             <form className="mb-3" onSubmit={handleFilterSubmit}>
                 <div className="row g-2">
                     <div className="col">
@@ -114,9 +120,14 @@ const InvoiceIndex = () => {
                             onChange={handleFilterChange}
                         />
                     </div>
+               
                     <div className="col-auto">
-                        <button type="submit" className="btn btn-primary">
-                            Filtrovat
+                        <button
+                            type="button"
+                            className="btn btn-secondary"
+                            onClick={handleShowAll}
+                        >
+                            Reset filtrů
                         </button>
                     </div>
                 </div>
