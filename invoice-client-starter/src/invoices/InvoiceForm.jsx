@@ -94,6 +94,7 @@ const InvoiceForm = () => {
         value={invoice.invoiceNumber}
         handleChange={(e) => setInvoice({ ...invoice, invoiceNumber: e.target.value })}
       />
+      
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
           <label className="form-label">Prodávající</label>
@@ -106,7 +107,9 @@ const InvoiceForm = () => {
             }}
             required
           >
-            <option value="">-- Vyberte osobu --</option>
+            <option value="" disabled hidden>
+              {sellerName || "-- Vyberte osobu --"}
+            </option>
             {people.map((p) => (
               <option key={p._id} value={p._id}>{p.name}</option>
             ))}

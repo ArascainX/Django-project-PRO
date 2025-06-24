@@ -30,6 +30,9 @@ const PersonIndex = () => {
     const [persons, setPersons] = useState([]);
 
     const deletePerson = async (id) => {
+        if (!window.confirm("Opravdu chcete osobu odstranit?")) {
+            return;
+        }
         try {
             await apiDelete("/api/persons/" + id);
         } catch (error) {

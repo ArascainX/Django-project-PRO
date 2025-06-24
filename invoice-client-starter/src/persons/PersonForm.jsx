@@ -81,7 +81,7 @@ const PersonForm = () => {
 
     return (
         <div>
-            <h1>{id ? "Upravit" : "Vytvořit"} osobnost</h1>
+            <h1>{id ? "Upravit" : "Vytvořit"} osoba</h1>
             <hr/>
             {errorState ? (
                 <div className="alert alert-danger">{errorState}</div>
@@ -89,7 +89,7 @@ const PersonForm = () => {
             {sent && (
                 <FlashMessage
                     theme={success ? "success" : ""}
-                    text={success ? "Uložení osobnosti proběhlo úspěšně." : ""}
+                    text={success ? "Uložení osoby proběhlo úspěšně." : ""}
                 />
             )}
             <form onSubmit={handleSubmit}>
