@@ -34,11 +34,13 @@ const InvoiceForm = () => {
       apiGet("/api/invoices/" + id).then((data) => {
         setInvoice({
           ...data,
+          seller: data.seller?._id || data.seller,
+          buyer: data.buyer?._id || data.buyer,
           issued: new Date(data.issued),
           dueDate: new Date(data.dueDate)
         });
-        fetchPersonName(data.buyer, setBuyerName);
-        fetchPersonName(data.seller, setSellerName);
+        fetchPersonName(data.buyer?._id || data.buyer, setBuyerName);
+        fetchPersonName(data.seller?._id || data.seller, setSellerName);
       });
     }
   }, [id]);
@@ -127,7 +129,9 @@ const InvoiceForm = () => {
             }}
             required
           >
-            <option value="">-- Vyberte osobu --</option>
+             <option value="" disabled hidden>
+              {buyerName || "-- Vyberte osobu --"}
+            </option>
             {people.map((p) => (
               <option key={p._id} value={p._id}>{p.name}</option>
             ))}
