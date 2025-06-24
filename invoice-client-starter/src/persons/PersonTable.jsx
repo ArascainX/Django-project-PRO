@@ -33,15 +33,17 @@ const PersonTable = ({label, items, deletePerson}) => {
             <table className="table table-bordered">
                 <thead>
                 <tr>
-                    <th>#</th>
+                    <th>Pořadí</th>
+                    <th>ID</th>
                     <th>Jméno</th>
-                    <th colSpan={3}>Akce</th>
+                    <th colSpan={4}>Akce</th>
                 </tr>
                 </thead>
                 <tbody>
                 {items.map((item, index) => (
                     <tr key={index + 1}>
                         <td>{index + 1}</td>
+                        <td>{item._id}</td>
                         <td>{item.name}</td>
                         <td>
                             <div className="btn-group">
