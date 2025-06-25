@@ -6,6 +6,7 @@ from ..serializers import InvoiceSerializer
 from ..models import Invoice
 from rest_framework.decorators import action
 from django.db.models.functions import TruncMonth
+from django.utils.timezone import now
 
 
 class InvoiceViewSet(viewsets.ModelViewSet):
@@ -48,7 +49,6 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='statistics')
     def invoice_statistics(self, _):
-        from django.utils.timezone import now
         current_year = now().year
 
         all_invoices = Invoice.objects.all()
@@ -64,8 +64,17 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="monthly-summary")
     def monthly_summary(self, request):
+        year_param = request.query_params.get("year", now().year)
+
+        try:
+            # 🛡️ vyčisti a převed na číslo
+            year = int(str(year_param).replace("?", ""))
+        except (ValueError, TypeError):
+            return Response({"error": "Neplatný parametr roku."}, status=400)
+
         data = (
             Invoice.objects
+            .filter(issued__year=year)
             .annotate(month=TruncMonth("issued"))
             .values("month")
             .annotate(total=Sum("price"))
@@ -80,4 +89,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
             for item in data if item["month"]
         ]
         return Response(result)
+
+
+
 

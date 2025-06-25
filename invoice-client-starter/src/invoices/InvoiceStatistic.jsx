@@ -38,10 +38,10 @@ const InvoiceStatistics = () => {
           </ul>
         </div>
       )}
-      <h2>Graf tržeb</h2>
-      <div className="mb-5">
-        <InvoiceChart />
-      </div>
+         <h2>Graf tržeb</h2>
+          <div className="mb-5">
+            <InvoiceChart />
+          </div>
 
       <h3 className="mt-4">Statistiky společností</h3>
 
