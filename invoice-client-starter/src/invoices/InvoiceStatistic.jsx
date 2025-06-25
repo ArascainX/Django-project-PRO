@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { apiGet } from "../utils/api";
+import InvoiceChart from "./InvoiceChart";  
 
 const InvoiceStatistics = () => {
   const [summaryStats, setSummaryStats] = useState(null);
@@ -25,7 +26,6 @@ const InvoiceStatistics = () => {
     <div>
       <h1>Statistiky faktur</h1>
       <hr />
-
       {error && <div className="alert alert-danger">{error}</div>}
 
       {summaryStats && (
@@ -38,6 +38,10 @@ const InvoiceStatistics = () => {
           </ul>
         </div>
       )}
+      <h2>Graf tržeb</h2>
+      <div className="mb-5">
+        <InvoiceChart />
+      </div>
 
       <h3 className="mt-4">Statistiky společností</h3>
 

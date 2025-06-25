@@ -27,7 +27,7 @@ const InvoiceIndex = () => {
 
     useEffect(() => {
         fetchInvoices();
-        // eslint-disable-next-line
+        // okamžité načtění dat při  renderu
     }, [filters]);
 
     const handleFilterChange = (e) => {
@@ -60,6 +60,16 @@ const InvoiceIndex = () => {
             <h1 className="mb-2">Seznam faktur</h1>
             <form className="mb-3" onSubmit={handleFilterSubmit}>
                 <div className="row g-2">
+                    <div className="col">
+                        <input
+                            type="text"
+                            className="form-control"
+                            name="name"
+                            placeholder="Jméno"
+                            value={filters.name}
+                            onChange={handleFilterChange}
+                        />
+                    </div>
                     <div className="col">
                         <input
                             type="text"

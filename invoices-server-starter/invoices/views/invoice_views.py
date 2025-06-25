@@ -1,9 +1,11 @@
+
 from django.db.models import Sum
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from ..serializers import InvoiceSerializer
 from ..models import Invoice
 from rest_framework.decorators import action
+from django.db.models.functions import TruncMonth
 
 
 class InvoiceViewSet(viewsets.ModelViewSet):
@@ -34,6 +36,13 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         if limit := params.get('limit'):
             queryset = queryset[:int(limit)]
 
+        if name := params.get('name'):
+            queryset = queryset.filter(
+                seller__name__icontains=name
+            ) | queryset.filter(
+                buyer__name__icontains=name
+            )
+
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
@@ -52,3 +61,23 @@ class InvoiceViewSet(viewsets.ModelViewSet):
             "allTimeSum": float(all_time_sum),
             "invoicesCount": invoice_count
         }, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=["get"], url_path="monthly-summary")
+    def monthly_summary(self, request):
+        data = (
+            Invoice.objects
+            .annotate(month=TruncMonth("issued"))
+            .values("month")
+            .annotate(total=Sum("price"))
+            .order_by("month")
+        )
+
+        result = [
+            {
+                "month": f"{item['month'].year}-{item['month'].month:02d}",
+                "total": item["total"]
+            }
+            for item in data if item["month"]
+        ]
+        return Response(result)
+
