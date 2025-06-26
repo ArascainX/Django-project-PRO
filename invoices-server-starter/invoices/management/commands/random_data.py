@@ -1,0 +1,71 @@
+import random
+from decimal import Decimal
+
+from django.core.management.base import BaseCommand
+from faker import Faker
+from invoices.models import Person, Invoice
+from datetime import timedelta, date
+
+fake = Faker('cs_CZ')
+
+class Command(BaseCommand):
+    help = "Vygeneruje testovací osoby a faktury"
+
+    def handle(self, *args, **kwargs):
+        self.stdout.write("🔥 Generuji osoby a faktury...")
+
+        # Vymazání starých dat
+        Invoice.objects.all().delete()
+        Person.objects.all().delete()
+
+        persons = []
+        for _ in range(30):
+            person = Person.objects.create(
+                name=fake.company(),
+                identificationNumber = f"{random.randint(10000000, 99999999)}",
+                taxNumber = f"CZ{random.randint(10000000, 99999999)}",
+                accountNumber=fake.bban(),
+                bankCode=str(fake.random_int(min=1000, max=9999)),
+                iban=fake.iban(),
+                telephone=fake.phone_number(),
+                mail=fake.company_email(),
+                street=fake.street_address(),
+                zip=fake.postcode(),
+                city=fake.city(),
+                country=random.choice(['CZECHIA', 'SLOVAKIA']),
+                note=fake.catch_phrase(),
+                hidden=False
+            )
+            persons.append(person)
+
+        if len(persons) < 2:
+            self.stdout.write(self.style.ERROR("❌ Není dostatek osob pro vytvoření faktur!"))
+            return
+
+        for i in range(50):
+            seller = random.choice(persons)
+            buyer = random.choice(persons)
+
+            # datum faktury náhodně za posledních 365 dní
+            issued_date = date.today() - timedelta(days=random.randint(0, 365))
+            due_date = issued_date + timedelta(days=30)
+
+            # Price - v rozmezí 100 až 10000, zaokrouhlené na 2 desetinná místa
+            price = Decimal(f"{random.uniform(100, 10000):.2f}")
+
+            # VAT - například 15%, 21%, 10% - náhodně vybráno
+            vat = Decimal(random.choice([10, 15, 21]))
+
+            invoice = Invoice.objects.create(
+                invoiceNumber=f"{fake.unique.random_int(1000, 9999)}",
+                seller=seller,
+                buyer=buyer,
+                issued=issued_date,
+                dueDate=due_date,
+                product=fake.bs(),
+                price=price,
+                vat=vat,
+                note=fake.sentence()
+            )
+            self.stdout.write(self.style.SUCCESS(f"✅ Faktura {invoice.invoiceNumber} vytvořena"))
+

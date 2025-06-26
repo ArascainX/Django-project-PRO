@@ -13,7 +13,6 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     queryset = Invoice.objects.all()
     serializer_class = InvoiceSerializer
 
-
     @action(detail=False, methods=['get'])
     def filter(self, request):
         queryset = Invoice.objects.all()

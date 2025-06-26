@@ -82,7 +82,19 @@ const InvoiceChart = () => {
                 responsive: true,
                 plugins: {
                   legend: { position: "top" },
-                  tooltip: { mode: "index", intersect: false },
+                  tooltip: {
+                    mode: "index",
+                    intersect: false,
+                    callbacks: {
+                      label: function (context) {
+                        const value = context.raw;
+                        const data = context.dataset.data;
+                        const total = data.reduce((acc, val) => acc + val, 0);
+                        const percent = ((value / total) * 100).toFixed(2);
+                        return `${context.label}: ${value.toLocaleString("cs-CZ")} Kč (${percent}%)`;
+                      },
+                    },
+                  },
                 },
                 scales: {
                   y: {

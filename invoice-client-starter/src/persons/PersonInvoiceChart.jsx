@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Pie } from "react-chartjs-2";
+import { Doughnut } from "react-chartjs-2";
 import { apiGet } from "../utils/api";
 
 import {
@@ -53,7 +53,10 @@ const PersonInvoiceChart = ({ personId, onBack }) => {
         callbacks: {
           label: function (context) {
             const value = context.raw;
-            return `${context.label}: ${value.toLocaleString("cs-CZ")} Kč`;
+            const data = context.dataset.data;
+            const total = data.reduce((acc, val) => acc + val, 0);
+            const percent = ((value / total) * 100).toFixed(2);
+            return `${context.label}: ${value.toLocaleString("cs-CZ")} Kč (${percent}%)`;
           },
         },
       },
@@ -66,11 +69,10 @@ const PersonInvoiceChart = ({ personId, onBack }) => {
       <button className="btn btn-secondary mb-3" onClick={onBack}>
         Zpět na přehled
       </button>
-      
-       <div style={{ maxWidth: "400px", margin: "0 auto" }}>
-      <Pie data={chartData} options={options} />
-      </div>
 
+      <div style={{ maxWidth: "400px", margin: "0 auto" }}>
+        <Doughnut data={chartData} options={options} />
+      </div>
     </div>
   );
 };
