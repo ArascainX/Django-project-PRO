@@ -6,6 +6,7 @@ from ..models import Invoice
 from rest_framework.decorators import action
 from django.db.models.functions import TruncMonth
 from django.utils.timezone import now
+from django.db.models.functions import ExtractYear
 
 
 class InvoiceViewSet(viewsets.ModelViewSet):
@@ -88,8 +89,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         return Response(result)
 
     @action(detail=False, methods=["get"], url_path="yearly-summary")
-    def yearly_summary(self, request):
-        from django.db.models.functions import ExtractYear
+    def yearly_summary(self, _):
         data = (
             Invoice.objects
             .annotate(year=ExtractYear("issued"))
