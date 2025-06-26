@@ -1,15 +1,30 @@
 import React, { useEffect, useState } from "react";
-import { Doughnut } from "react-chartjs-2";
+import { Line } from "react-chartjs-2";
 import { apiGet } from "../utils/api";
 
 import {
   Chart as ChartJS,
-  ArcElement,
+  CategoryScale,
+  LinearScale,
+  LineElement,
+  PointElement,
   Tooltip,
   Legend,
 } from "chart.js";
 
-ChartJS.register(ArcElement, Tooltip, Legend);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Tooltip,
+  Legend
+);
+
+const MONTHS = [
+  "Leden", "Únor", "Březen", "Duben", "Květen", "Červen",
+  "Červenec", "Srpen", "Září", "Říjen", "Listopad", "Prosinec"
+];
 
 const PersonInvoiceChart = ({ personId, onBack }) => {
   const [data, setData] = useState(null);
@@ -22,23 +37,31 @@ const PersonInvoiceChart = ({ personId, onBack }) => {
     }
   }, [personId]);
 
-  if (!data) return <p>Načítání...</p>;
+  if (!data || !data.monthly) return <p>Načítání...</p>;
+
+  const received = data.monthly.received || Array(12).fill(0);
+  const issued = data.monthly.issued || Array(12).fill(0);
 
   const chartData = {
-    labels: ["Přijaté faktury", "Vystavené faktury"],
+    labels: MONTHS,
     datasets: [
       {
-        label: "Součet částek",
-        data: [data.received.sum, data.issued.sum],
-        backgroundColor: [
-          "rgba(255, 64, 64, 0.82)",
-          "rgba(54, 162, 235, 0.6)"
-        ],
-        borderColor: [
-          "rgb(255, 105, 64)",
-          "rgba(54, 162, 235, 1)"
-        ],
-        borderWidth: 1,
+        label: "Výdaje",
+        data: received,
+        fill: false,
+        tension: 0.4,
+        borderColor: "rgb(223, 16, 16)",
+        backgroundColor: "rgba(231, 12, 12, 0.5)",
+        pointBackgroundColor: "rgb(85, 11, 11)",
+      },
+      {
+        label: "Příjmy",
+        data: issued,
+        fill: false,
+        tension: 0.4,
+        borderColor: "rgb(60, 219, 20)",
+        backgroundColor: "rgba(60, 219, 20, 0.5)",
+        pointBackgroundColor: "rgb(23, 87, 7)",
       },
     ],
   };
@@ -46,6 +69,9 @@ const PersonInvoiceChart = ({ personId, onBack }) => {
   const options = {
     responsive: true,
     plugins: {
+      datalabels: {
+        display: false,
+      },
       legend: {
         position: "top",
       },
@@ -53,10 +79,20 @@ const PersonInvoiceChart = ({ personId, onBack }) => {
         callbacks: {
           label: function (context) {
             const value = context.raw;
-            const data = context.dataset.data;
-            const total = data.reduce((acc, val) => acc + val, 0);
-          const percent = ((value / total) * 100).toFixed(2);
+            const dataset = context.dataset.data;
+            const total = dataset.reduce((acc, val) => acc + val, 0);
+            const percent = ((value / total) * 100).toFixed(2);
             return `${context.label}: ${value.toLocaleString("cs-CZ")} Kč (${percent}%)`;
+          },
+        },
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          callback: function (value) {
+            return value.toLocaleString("cs-CZ") + " Kč";
           },
         },
       },
@@ -65,13 +101,13 @@ const PersonInvoiceChart = ({ personId, onBack }) => {
 
   return (
     <div>
-      <h4>{data.personName} — podíl fakturovaných částek</h4>
+      <h4>{data.personName} — měsíční přehled faktur</h4>
       <button className="btn btn-secondary mb-3" onClick={onBack}>
-        Zpět na přehled
+        Zpět na přehled osob
       </button>
 
-      <div style={{ maxWidth: "400px", margin: "0 auto" }}>
-        <Doughnut data={chartData} options={options} />
+      <div style={{ maxWidth: "800px", margin: "0 auto" }}>
+        <Line data={chartData} options={options} />
       </div>
     </div>
   );

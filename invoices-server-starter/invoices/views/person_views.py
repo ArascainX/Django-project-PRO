@@ -1,4 +1,5 @@
 from django.db.models import Sum
+from django.db.models.functions import TruncMonth
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -47,29 +48,33 @@ class PersonViewSet(viewsets.ModelViewSet):
 
         return Response(statistics, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=['get'], url_path='invoice-summary')
+    @action(detail=True, methods=["get"], url_path="invoice-summary")
     def invoice_summary(self, _, pk=None):
         person = self.get_object()
 
-        issued_agg = Invoice.objects.filter(seller=person).aggregate(Sum('price'))
-        received_agg = Invoice.objects.filter(buyer=person).aggregate(Sum('price'))
+        def monthly_aggregate(queryset):
+            result = [0] * 12
+            monthly_data = (
+                queryset
+                .annotate(month=TruncMonth("issued"))
+                .values("month")
+                .annotate(total=Sum("price"))
+                .order_by("month")
+            )
+            for item in monthly_data:
+                if item["month"]:
+                    index = item["month"].month - 1
+                    result[index] = float(item["total"])
+            return result
 
-        issued_sum = issued_agg.get('price__sum') or 0
-        received_sum = received_agg.get('price__sum') or 0
-
-        issued_count = Invoice.objects.filter(seller=person).count()
-        received_count = Invoice.objects.filter(buyer=person).count()
+        received = Invoice.objects.filter(buyer=person)
+        issued = Invoice.objects.filter(seller=person)
 
         return Response({
-            "personId": person.id,
             "personName": person.name,
-            "issued": {
-                "count": issued_count,
-                "sum": float(issued_sum)
-            },
-            "received": {
-                "count": received_count,
-                "sum": float(received_sum)
+            "monthly": {
+                "received": monthly_aggregate(received),
+                "issued": monthly_aggregate(issued),
             }
         })
 

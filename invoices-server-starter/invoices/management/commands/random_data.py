@@ -1,6 +1,5 @@
 import random
 from decimal import Decimal
-
 from django.core.management.base import BaseCommand
 from faker import Faker
 from invoices.models import Person, Invoice
@@ -17,9 +16,10 @@ class Command(BaseCommand):
         # Vymazání starých dat
         Invoice.objects.all().delete()
         Person.objects.all().delete()
+        self.stdout.write("✅ Staré osoby a faktury byly vymazány.")
 
         persons = []
-        for _ in range(30):
+        for _ in range(10):
             person = Person.objects.create(
                 name=fake.company(),
                 identificationNumber = f"{random.randint(10000000, 99999999)}",
@@ -38,15 +38,11 @@ class Command(BaseCommand):
             )
             persons.append(person)
 
-        if len(persons) < 2:
-            self.stdout.write(self.style.ERROR("❌ Není dostatek osob pro vytvoření faktur!"))
-            return
-
-        for i in range(50):
+        for i in range(200):
             seller = random.choice(persons)
             buyer = random.choice(persons)
 
-            random_year = random.randint(2020, 2025)
+            random_year = random.randint(2024, 2025)
             random_month = random.randint(1, 12)
             random_day = random.randint(1, 28)
 

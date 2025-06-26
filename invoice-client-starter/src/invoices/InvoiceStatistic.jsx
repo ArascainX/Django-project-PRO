@@ -30,20 +30,29 @@ const InvoiceStatistics = () => {
       <hr />
       {error && <div className="alert alert-danger">{error}</div>}
 
-      {summaryStats && (
-        <div>
-          <h3>Souhrnné statistiky</h3>
-          <ul>
-            <li>Počet faktur: {summaryStats.invoicesCount}</li>
-            <li>Součet cen v letošním roce: {summaryStats.currentYearSum} Kč</li>
-            <li>Součet cen za všechny roky: {summaryStats.allTimeSum} Kč</li>
-          </ul>
-        </div>
-      )}
-         <h2>Graf tržeb</h2>
-          <div className="mb-5">
-            <InvoiceChart />
+        {summaryStats && (
+          <div>
+            <h3>Souhrnné statistiky</h3>
+            <ul>
+              <li>Počet faktur: {summaryStats.invoicesCount}</li>
+              <li>
+                Součet cen v letošním roce:{" "}
+                {summaryStats.currentYearSum.toLocaleString("cs-CZ", {})}{" "}
+                Kč
+              </li>
+              <li>
+                Součet cen za všechny roky:{" "}
+                {summaryStats.allTimeSum.toLocaleString("cs-CZ", {})}{" "}
+                Kč
+              </li>
+            </ul>
           </div>
+        )}
+
+        <h2>Graf tržeb</h2>
+        <div className="mb-5">
+          <InvoiceChart />
+        </div>
 
       <h3 className="mt-4">Statistiky společností</h3>
       {selectedPersonId ? (
@@ -79,7 +88,7 @@ const InvoiceStatistics = () => {
               <tr key={personId} onClick={() => setSelectedPersonId(personId)} style={{ cursor: 'pointer' }}>
                 <td>{personId}</td>
                 <td>{personName}</td>
-                <td>{revenue} Kč</td>
+                <td>{revenue.toLocaleString("cs-CZ", {})} Kč</td>
               </tr>
             ))}
           </tbody>

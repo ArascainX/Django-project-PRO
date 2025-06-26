@@ -1,4 +1,3 @@
-
 from django.db.models import Sum
 from rest_framework import viewsets, status
 from rest_framework.response import Response
@@ -66,8 +65,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         year_param = request.query_params.get("year", now().year)
 
         try:
-            # 🛡️ vyčisti a převed na číslo
-            year = int(str(year_param).replace("?", ""))
+            year = int(str(year_param).strip())
         except (ValueError, TypeError):
             return Response({"error": "Neplatný parametr roku."}, status=400)
 
@@ -88,6 +86,21 @@ class InvoiceViewSet(viewsets.ModelViewSet):
             for item in data if item["month"]
         ]
         return Response(result)
+
+    @action(detail=False, methods=["get"], url_path="yearly-summary")
+    def yearly_summary(self, request):
+        from django.db.models.functions import ExtractYear
+        data = (
+            Invoice.objects
+            .annotate(year=ExtractYear("issued"))
+            .values("year")
+            .annotate(total=Sum("price"))
+            .order_by("year")
+        )
+        return Response([
+            {"year": item["year"], "total": item["total"]} for item in data
+        ])
+
 
 
 
