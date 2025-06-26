@@ -46,14 +46,17 @@ class Command(BaseCommand):
             seller = random.choice(persons)
             buyer = random.choice(persons)
 
-            # datum faktury náhodně za posledních 365 dní
-            issued_date = date.today() - timedelta(days=random.randint(0, 365))
+            random_year = random.randint(2020, 2025)
+            random_month = random.randint(1, 12)
+            random_day = random.randint(1, 28)
+
+            issued_date = date(year=random_year, month=random_month, day=random_day)
             due_date = issued_date + timedelta(days=30)
 
-            # Price - v rozmezí 100 až 10000, zaokrouhlené na 2 desetinná místa
-            price = Decimal(f"{random.uniform(100, 10000):.2f}")
+            # Price - zaokrouhlené na 2 desetinná místa
+            price = Decimal(f"{random.uniform(500, 100000):.2f}")
 
-            # VAT - například 15%, 21%, 10% - náhodně vybráno
+            # VAT - 15%, 21%, 10% - náhodně vybráno
             vat = Decimal(random.choice([10, 15, 21]))
 
             invoice = Invoice.objects.create(
