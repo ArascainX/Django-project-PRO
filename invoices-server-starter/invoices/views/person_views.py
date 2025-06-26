@@ -46,3 +46,30 @@ class PersonViewSet(viewsets.ModelViewSet):
             })
 
         return Response(statistics, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['get'], url_path='invoice-summary')
+    def invoice_summary(self, _, pk=None):
+        person = self.get_object()
+
+        issued_agg = Invoice.objects.filter(seller=person).aggregate(Sum('price'))
+        received_agg = Invoice.objects.filter(buyer=person).aggregate(Sum('price'))
+
+        issued_sum = issued_agg.get('price__sum') or 0
+        received_sum = received_agg.get('price__sum') or 0
+
+        issued_count = Invoice.objects.filter(seller=person).count()
+        received_count = Invoice.objects.filter(buyer=person).count()
+
+        return Response({
+            "personId": person.id,
+            "personName": person.name,
+            "issued": {
+                "count": issued_count,
+                "sum": float(issued_sum)
+            },
+            "received": {
+                "count": received_count,
+                "sum": float(received_sum)
+            }
+        })
+
