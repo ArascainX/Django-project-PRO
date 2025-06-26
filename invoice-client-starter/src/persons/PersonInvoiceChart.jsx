@@ -31,11 +31,11 @@ const PersonInvoiceChart = ({ personId, onBack }) => {
         label: "Součet částek",
         data: [data.received.sum, data.issued.sum],
         backgroundColor: [
-          "rgba(255, 159, 64, 0.6)",
+          "rgba(255, 64, 64, 0.82)",
           "rgba(54, 162, 235, 0.6)"
         ],
         borderColor: [
-          "rgba(255, 159, 64, 1)",
+          "rgb(255, 105, 64)",
           "rgba(54, 162, 235, 1)"
         ],
         borderWidth: 1,
@@ -55,7 +55,7 @@ const PersonInvoiceChart = ({ personId, onBack }) => {
             const value = context.raw;
             const data = context.dataset.data;
             const total = data.reduce((acc, val) => acc + val, 0);
-            const percent = ((value / total) * 100).toFixed(2);
+          const percent = ((value / total) * 100).toFixed(2);
             return `${context.label}: ${value.toLocaleString("cs-CZ")} Kč (${percent}%)`;
           },
         },

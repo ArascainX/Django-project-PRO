@@ -36,8 +36,8 @@ const InvoiceChart = () => {
             {
               label: `Tržby za rok ${year}`,
               data: monthlyTotals,
-              backgroundColor: "rgba(153, 102, 255, 0.6)",
-              borderColor: "rgba(153, 102, 255, 1)",
+              backgroundColor: "rgba(16, 34, 229, 0.6)",
+              borderColor: "rgb(29, 71, 177)",
               borderWidth: 1,
             },
           ],
