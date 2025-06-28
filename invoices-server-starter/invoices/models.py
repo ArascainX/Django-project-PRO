@@ -41,3 +41,8 @@ class Invoice(models.Model):
     vat = models.DecimalField(max_digits=5, decimal_places=2)
     note = models.TextField(blank=True, null=True)
 
+    @property
+    def price_with_vat(self):
+        return self.price + (self.price * self.vat / 100)
+
+

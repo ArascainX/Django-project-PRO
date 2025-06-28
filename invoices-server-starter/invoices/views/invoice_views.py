@@ -1,12 +1,13 @@
 from django.db.models import Sum
-from rest_framework import viewsets, status
-from rest_framework.response import Response
-from ..serializers import InvoiceSerializer
-from ..models import Invoice
-from rest_framework.decorators import action
+from django.db.models.functions import ExtractYear
 from django.db.models.functions import TruncMonth
 from django.utils.timezone import now
-from django.db.models.functions import ExtractYear
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
+from ..models import Invoice
+from ..serializers import InvoiceSerializer
 
 
 class InvoiceViewSet(viewsets.ModelViewSet):
@@ -100,8 +101,6 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         return Response([
             {"year": item["year"], "total": item["total"]} for item in data
         ])
-
-
 
 
 

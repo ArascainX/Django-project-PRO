@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @font-face {
+            font-family: 'DejaVuSans';
+            src: url("{{ STATIC_URL }}fonts/DejaVuSans.ttf");
+        }
+
+        body {
+            font-family: 'DejaVuSans';
+            font-size: 12pt;
+            padding: 40px;
+        }
+
+        .header, .footer {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .info-box {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .info {
+            width: 48%;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+        }
+
+        .total {
+            text-align: right;
+            font-weight: bold;
+        }
+
+        .note {
+            font-style: italic;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>Faktura č. {{ invoice.invoiceNumber }}</h2>
+        <p>Vystaveno: {{ invoice.issued }} | Splatnost: {{ invoice.dueDate }}</p>
+    </div>
+
+    <div class="info-box section">
+        <div class="info">
+            <h3>Prodávající</h3>
+            <p><strong>{{ invoice.seller.name }}</strong></p>
+            <p>IČ: {{ invoice.seller.identificationNumber }}</p>
+            {% if invoice.seller.taxNumber %}<p>DIČ: {{ invoice.seller.taxNumber }}</p>{% endif %}
+            <p>{{ invoice.seller.street }}, {{ invoice.seller.zip }} {{ invoice.seller.city }}</p>
+            <p>{{ invoice.seller.country }}</p>
+            <p>Tel: {{ invoice.seller.telephone }}</p>
+            <p>Email: {{ invoice.seller.mail }}</p>
+            <p>Účet: {{ invoice.seller.accountNumber }} / {{ invoice.seller.bankCode }}</p>
+            {% if invoice.seller.iban %}<p>IBAN: {{ invoice.seller.iban }}</p>{% endif %}
+        </div>
+
+        <div class="info">
+            <h3>Kupující</h3>
+            <p><strong>{{ invoice.buyer.name }}</strong></p>
+            <p>IČ: {{ invoice.buyer.identificationNumber }}</p>
+            {% if invoice.buyer.taxNumber %}<p>DIČ: {{ invoice.buyer.taxNumber }}</p>{% endif %}
+            <p>{{ invoice.buyer.street }}, {{ invoice.buyer.zip }} {{ invoice.buyer.city }}</p>
+            <p>{{ invoice.buyer.country }}</p>
+            <p>Tel: {{ invoice.buyer.telephone }}</p>
+            <p>Email: {{ invoice.buyer.mail }}</p>
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>Položka</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Popis</th>
+                    <th>Cena</th>
+                    <th>DPH</th>
+                    <th>Celkem</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ invoice.product }}</td>
+                    <td>{{ invoice.price }} Kč</td>
+                    <td>{{ invoice.vat }}%</td>
+                    <td>{{ invoice.price_with_vat }} Kč</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    {% if invoice.note %}
+    <div class="note">Poznámka: {{ invoice.note }}</div>
+    {% endif %}
+
+    <div class="footer">
+        <p>Děkujeme za vaši objednávku.</p>
+    </div>
+</body>
+</html>

@@ -101,7 +101,7 @@ const PersonInvoiceChart = ({ personId, onBack }) => {
 
   return (
     <div>
-      <h4>{data.personName} — měsíční přehled faktur</h4>
+      <h4>{data.personName} — Roční přehled faktur</h4>
       <button className="btn btn-secondary mb-3" onClick={onBack}>
         Zpět na přehled osob
       </button>
