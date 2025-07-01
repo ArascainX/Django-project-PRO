@@ -6,7 +6,6 @@ import 'react-pdf/dist/Page/TextLayer.css';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.mjs`;
 
-
 const InvoicePDF = ({ invoiceNumber }) => {
   const [loading, setLoading] = useState(false);
   const [pdfUrl, setPdfUrl] = useState(null);
@@ -14,33 +13,38 @@ const InvoicePDF = ({ invoiceNumber }) => {
   const [error, setError] = useState(null);
 
   const downloadInvoice = async () => {
-  setLoading(true);
-  setError(null);
-  try {
-    const blob = await apiGet(`/api/invoices/${encodeURIComponent(invoiceNumber)}/pdf/`, null, 'blob');
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `faktura_${invoiceNumber}.pdf`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
-  } catch (error) {
-    console.error('Chyba při stahování PDF:', error);
-    setError(error.message.includes('404') ? 'Faktura nenalezena.' : 'Nepodařilo se stáhnout PDF faktury.');
-  } finally {
-    setLoading(false);
-  }
-};
+    setLoading(true);
+    setError(null);
+    try {
+      const blob = await apiGet(`/api/invoices/${encodeURIComponent(invoiceNumber)}/pdf/`, null, 'blob');
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `faktura_${invoiceNumber}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Chyba při stahování PDF:', error);
+      setError(error.message.includes('404') ? 'Faktura nenalezena.' : 'Nepodařilo se stáhnout PDF faktury.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const displayInvoice = async () => {
+    setLoading(true);
+    setError(null);
     try {
-      const url = `http://localhost:8000/api/invoices/${invoiceNumber}/pdf/`;
-      setPdfUrl(url); // jen nastavíš URL k iframe
+      const response = await apiGet(`/api/invoices/${encodeURIComponent(invoiceNumber)}/pdf/`, null, 'blob');
+      const url = window.URL.createObjectURL(response);
+      setPdfUrl(url);
     } catch (error) {
       console.error('Chyba při zobrazení PDF:', error);
       setError('Nepodařilo se zobrazit PDF faktury.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -54,14 +58,14 @@ const InvoicePDF = ({ invoiceNumber }) => {
         <button
           onClick={downloadInvoice}
           disabled={loading || !invoiceNumber}
-          className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
+          className="btn btn-sm btn-warning"
         >
           {loading ? 'Generuji...' : 'Stáhnout PDF'}
         </button>
         <button
           onClick={displayInvoice}
           disabled={loading || !invoiceNumber}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
+          className="btn btn-sm btn-info"
         >
           {loading ? 'Generuji...' : 'Zobrazit PDF'}
         </button>
@@ -72,20 +76,30 @@ const InvoicePDF = ({ invoiceNumber }) => {
           <Document
             file={pdfUrl}
             onLoadSuccess={onDocumentLoadSuccess}
-            className="flex justify-center"
-            error="Nepodařilo se načíst PDF."
+            onLoadError={(error) => setError('Chyba při načítání PDF.')}
             loading="Načítání PDF..."
+            className="flex justify-center"
           >
-            {numPages &&
-              Array.from(new Array(numPages), (el, index) => (
-                <Page
-                  key={`page_${index + 1}`}
-                  pageNumber={index + 1}
-                  width={600}
-                  className="mb-4"
-                />
-              ))}
+            {Array.from(new Array(numPages), (el, index) => (
+              <Page
+                key={`page_${index + 1}`}
+                pageNumber={index + 1}
+                width={600}
+                className="mb-4"
+                renderAnnotationLayer={false}
+                renderTextLayer={false}
+              />
+            ))}
           </Document>
+          <button
+            onClick={() => {
+              setPdfUrl(null);
+              setNumPages(null);
+            }}
+            className="btn btn-sm btn-danger mt-4"
+          >
+            Zavřít PDF
+          </button>
         </div>
       )}
     </div>
