@@ -23,6 +23,19 @@ const InvoiceDetail = () => {
       });
   }, [id]);
 
+  const formatPrice = (value) => {
+    if (typeof value !== 'number') value = parseFloat(value);
+    return new Intl.NumberFormat('cs-CZ', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(value) + ' Kč';
+  };
+
+  const formatDate = (value) => {
+    if (!value) return 'Není uvedeno';
+    return new Date(value).toLocaleDateString('cs-CZ'); 
+  };
+
   if (loading) {
     return <div className="p-4">Načítání...</div>;
   }
@@ -44,12 +57,11 @@ const InvoiceDetail = () => {
           <h3 className="text-lg font-semibold">Číslo: {invoice.invoiceNumber}</h3>
           <p><strong>Vystavitel:</strong> {invoice.seller?.name || 'Není uvedeno'}</p>
           <p><strong>Odběratel:</strong> {invoice.buyer?.name || 'Není uvedeno'}</p>
-          <p><strong>Datum vystavení:</strong> {invoice.issued ? new Date(invoice.issued).toLocaleDateString('cs-CZ') : 'Není uvedeno'}</p>
-          <p><strong>Datum splatnosti:</strong> {invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString('cs-CZ') : 'Není uvedeno'}</p>
+          <p><strong>Datum vystavení:</strong> {formatDate(invoice.issued)}</p>
+          <p><strong>Datum splatnosti:</strong> {formatDate(invoice.dueDate)}</p>
           <p><strong>Produkt:</strong> {invoice.product || 'Není uvedeno'}</p>
-          <p><strong>Cena:</strong> {invoice.price ? `${invoice.price} Kč` : 'Není uvedeno'}</p>
+          <p><strong>Cena:</strong> {formatPrice(invoice.price)}</p>
           <p><strong>DPH:</strong> {invoice.vat ? `${invoice.vat} %` : 'Není uvedeno'}</p>
-          <p><strong>Cena s DPH:</strong> {invoice.price_with_vat ? `${invoice.price_with_vat} Kč` : 'Není uvedeno'}</p>
           <p><strong>Poznámka:</strong> {invoice.note || 'Žádná'}</p>
         </div>
         <div>

@@ -3,7 +3,7 @@ from reportlab.platypus import (
     Paragraph, Table, TableStyle, SimpleDocTemplate, Spacer,
     Image, HRFlowable
 )
-from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
 from reportlab.lib import colors
 from reportlab.pdfbase import pdfmetrics
@@ -38,7 +38,7 @@ def generate_invoice_pdf(_, invoice_number):
         topMargin=20 * mm,
         bottomMargin=20 * mm
     )
-    styles = getSampleStyleSheet()
+
     bold = ParagraphStyle(name='Bold', fontName='Poppins-Bold', fontSize=10)
     normal = ParagraphStyle(name='Normal', fontName='Poppins', fontSize=9, leading=12)
     header_bold = ParagraphStyle(name='HeaderBold', fontName='Poppins-Bold', fontSize=13, alignment=2, leading=16)
@@ -151,7 +151,7 @@ def generate_invoice_pdf(_, invoice_number):
 
     qr = qrcode.make(
         f"SPD*1.0*ACC:{invoice.buyer.accountNumber}/{invoice.buyer.bankCode}"
-        f"*AM:{invoice.price_with_vat:.2f}*CC:CZK"
+        f"*AM:{float(invoice.price_with_vat):.2f}*CC:CZK"
     )
     qr_path = os.path.join(settings.MEDIA_ROOT, 'temp_qr.png')
     qr.save(qr_path)

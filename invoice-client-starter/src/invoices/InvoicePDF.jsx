@@ -72,7 +72,7 @@ const InvoicePDF = ({ invoiceNumber }) => {
       </div>
       {error && <div className="text-red-500 mb-4">{error}</div>}
       {pdfUrl && (
-        <div className="mt-4 border border-gray-300 rounded p-4">
+        <div>
           <Document
             file={pdfUrl}
             onLoadSuccess={onDocumentLoadSuccess}

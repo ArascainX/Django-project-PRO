@@ -6,6 +6,7 @@ import FlashMessage from "../components/FlashMessage";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
+
 const InvoiceForm = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -20,6 +21,7 @@ const InvoiceForm = () => {
     buyer: "",
     seller: ""
   });
+  
   const [buyerName, setBuyerName] = useState("");
   const [sellerName, setSellerName] = useState("");
   const [people, setPeople] = useState([]);
@@ -88,7 +90,8 @@ const InvoiceForm = () => {
           text={successState ? "Faktura byla úspěšně uložena." : ""}
         />
       )}
-        <InputField
+
+      <InputField
         required={true}
         type="text"
         name="invoiceNumber"
@@ -96,7 +99,7 @@ const InvoiceForm = () => {
         value={invoice.invoiceNumber}
         handleChange={(e) => setInvoice({ ...invoice, invoiceNumber: e.target.value })}
       />
-      
+
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
           <label className="form-label">Prodávající</label>
@@ -113,7 +116,9 @@ const InvoiceForm = () => {
               {sellerName || "-- Vyberte osobu --"}
             </option>
             {people.map((p) => (
-              <option key={p._id} value={p._id}>{p.name}</option>
+              <option key={p._id} value={p._id}>
+                {p.name}
+              </option>
             ))}
           </select>
         </div>
@@ -129,21 +134,25 @@ const InvoiceForm = () => {
             }}
             required
           >
-             <option value="" disabled hidden>
+            <option value="" disabled hidden>
               {buyerName || "-- Vyberte osobu --"}
             </option>
             {people.map((p) => (
-              <option key={p._id} value={p._id}>{p.name}</option>
+              <option key={p._id} value={p._id}>
+                {p.name}
+              </option>
             ))}
           </select>
         </div>
+
         <div className="mb-3">
           <label className="form-label">Datum vystavení</label>
           <DatePicker
             selected={invoice.issued}
             onChange={(date) => setInvoice({ ...invoice, issued: date })}
             className="form-control"
-            dateFormat="yyyy-MM-dd"
+            dateFormat="dd-MM-yyyy"
+            placeholderText="dd-MM-yyyy"
           />
         </div>
 
@@ -153,7 +162,8 @@ const InvoiceForm = () => {
             selected={invoice.dueDate}
             onChange={(date) => setInvoice({ ...invoice, dueDate: date })}
             className="form-control"
-            dateFormat="yyyy-MM-dd"
+            dateFormat="dd-MM-yyyy"
+            placeholderText="dd-MM-yyyy"
           />
         </div>
 
@@ -170,7 +180,7 @@ const InvoiceForm = () => {
           required={true}
           type="number"
           name="price"
-          label="Cena"
+          label="Cena bez DPH"
           value={invoice.price}
           handleChange={(e) => setInvoice({ ...invoice, price: e.target.value })}
         />

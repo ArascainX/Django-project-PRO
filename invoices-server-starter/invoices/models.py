@@ -27,6 +27,7 @@ class Person(models.Model):
     note = models.TextField(blank=True, null=True)
     hidden = models.BooleanField(default=False, db_index=True)
 
+
 class Invoice(models.Model):
     objects = None
     invoiceNumber = models.CharField(max_length=50, unique=True)
@@ -36,13 +37,16 @@ class Invoice(models.Model):
 
     issued = models.DateField()
     dueDate = models.DateField()
-    product = models.CharField(max_length=255)
+    product = models.CharField(max_length=200, blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     vat = models.DecimalField(max_digits=5, decimal_places=2)
     note = models.TextField(blank=True, null=True)
 
     @property
     def price_with_vat(self):
-        return self.price + (self.price * self.vat / 100)
+        from decimal import Decimal
+        return self.price + (self.price * self.vat / Decimal("100"))
+
+
 
 

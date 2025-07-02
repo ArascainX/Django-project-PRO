@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { apiGet, apiDelete } from "../utils/api";
 import InvoiceTable from "./InvoiceTable";
+import { Link } from "react-router-dom";
 
 const defaultFilters = {
     buyerID: "",
@@ -57,7 +58,7 @@ const InvoiceIndex = () => {
 
     return (
         <div>
-            <h1 className="mb-2">Seznam faktur</h1>
+            <h1 className="mb-2">Seznam faktur <Link to="/invoices/create" className="btn btn-success"><strong> ✚ </strong></Link></h1>
             <form className="mb-3" onSubmit={handleFilterSubmit}>
                 <div className="row g-2">
                     <div className="col">

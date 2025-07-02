@@ -26,8 +26,14 @@ const MONTHS = [
   "Červenec", "Srpen", "Září", "Říjen", "Listopad", "Prosinec"
 ];
 
+const currentYear = new Date().getFullYear();
+const AVAILABLE_YEARS = Array.from({ length: 6 }, (_, i) => currentYear - 5 + i);
+
 const PersonInvoiceChart = ({ personId, onBack }) => {
   const [data, setData] = useState(null);
+  const [yearFrom, setYearFrom] = useState(currentYear - 2);
+  const [yearTo, setYearTo] = useState(currentYear);
+
 
   useEffect(() => {
     if (personId) {
@@ -101,12 +107,36 @@ const PersonInvoiceChart = ({ personId, onBack }) => {
 
   return (
     <div>
-      <h4>{data.personName} — Roční přehled faktur</h4>
+      <h4>{data.personName} — přehled faktur za období</h4>
       <button className="btn btn-secondary mb-3" onClick={onBack}>
         Zpět na přehled osob
       </button>
 
-      <div style={{ maxWidth: "800px", margin: "0 auto" }}>
+      <div className="d-flex mb-4 gap-2 align-items-center">
+        <label>Od roku:</label>
+        <select
+          className="form-select w-auto"
+          value={yearFrom}
+          onChange={(e) => setYearFrom(Number(e.target.value))}
+        >
+          {AVAILABLE_YEARS.map((y) => (
+            <option key={y} value={y}>{y}</option>
+          ))}
+        </select>
+
+        <label>Do roku:</label>
+        <select
+          className="form-select w-auto"
+          value={yearTo}
+          onChange={(e) => setYearTo(Number(e.target.value))}
+        >
+          {AVAILABLE_YEARS.map((y) => (
+            <option key={y} value={y}>{y}</option>
+          ))}
+        </select>
+      </div>
+
+      <div style={{ maxWidth: "800px", margin: "0 auto"}}>
         <Line data={chartData} options={options} />
       </div>
     </div>
