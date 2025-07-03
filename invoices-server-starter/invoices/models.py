@@ -46,7 +46,3 @@ class Invoice(models.Model):
     def price_with_vat(self):
         from decimal import Decimal
         return self.price + (self.price * self.vat / Decimal("100"))
-
-
-
-

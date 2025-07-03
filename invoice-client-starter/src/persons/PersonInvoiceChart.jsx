@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
 import { apiGet } from "../utils/api";
-
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -12,75 +11,71 @@ import {
   Legend,
 } from "chart.js";
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Tooltip,
-  Legend
-);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
 
 const MONTHS = [
   "Leden", "Únor", "Březen", "Duben", "Květen", "Červen",
   "Červenec", "Srpen", "Září", "Říjen", "Listopad", "Prosinec"
 ];
 
-const currentYear = new Date().getFullYear();
-const AVAILABLE_YEARS = Array.from({ length: 6 }, (_, i) => currentYear - 5 + i);
-
 const PersonInvoiceChart = ({ personId, onBack }) => {
-  const [data, setData] = useState(null);
-  const [yearFrom, setYearFrom] = useState(currentYear - 2);
+  const currentYear = new Date().getFullYear();
+  const [yearFrom, setYearFrom] = useState(currentYear - 1);
   const [yearTo, setYearTo] = useState(currentYear);
+  const [data, setData] = useState(null);
+  const [availableYears, setAvailableYears] = useState([2020, 2021, 2022, 2023, 2024, 2025]);
+  const [error, setError] = useState(null);
 
+  const fetchData = async () => {
+    try {
+      const result = await apiGet(`/api/persons/${personId}/invoice-summary/`, {
+        year_from: yearFrom,
+        year_to: yearTo,
+      });
+      setData(result);
+    } catch (e) {
+      setError("Nepodařilo se načíst data.");
+      console.error(e);
+    }
+  };
 
   useEffect(() => {
     if (personId) {
-      apiGet(`/api/persons/${personId}/invoice-summary/`)
-        .then(setData)
-        .catch(() => alert("Chyba při načítání dat."));
+      fetchData();
     }
-  }, [personId]);
+  }, [personId, yearFrom, yearTo]);
 
-  if (!data || !data.monthly) return <p>Načítání...</p>;
-
-  const received = data.monthly.received || Array(12).fill(0);
-  const issued = data.monthly.issued || Array(12).fill(0);
+  if (error) return <p>{error}</p>;
+  if (!data || !data.monthly) return <p>Načítání dat...</p>;
 
   const chartData = {
     labels: MONTHS,
     datasets: [
       {
         label: "Výdaje",
-        data: received,
+        data: data.monthly.received || Array(12).fill(0),
         fill: false,
-        tension: 0.4,
-        borderColor: "rgb(223, 16, 16)",
-        backgroundColor: "rgba(231, 12, 12, 0.5)",
-        pointBackgroundColor: "rgb(85, 11, 11)",
+        tension: 0.3,
+        borderColor: "rgba(239, 68, 68, 0.8)",
+        backgroundColor: "rgba(239, 68, 68, 0.3)",
+        pointBackgroundColor: "rgb(107, 6, 6)",
       },
       {
         label: "Příjmy",
-        data: issued,
+        data: data.monthly.issued || Array(12).fill(0),
         fill: false,
-        tension: 0.4,
-        borderColor: "rgb(60, 219, 20)",
-        backgroundColor: "rgba(60, 219, 20, 0.5)",
-        pointBackgroundColor: "rgb(23, 87, 7)",
+        tension: 0.3,
+        borderColor: "rgba(34, 197, 94, 0.8)",
+        backgroundColor: "rgba(34, 197, 94, 0.3)",
+        pointBackgroundColor: "rgb(16, 82, 14)",
       },
     ],
   };
-
   const options = {
     responsive: true,
     plugins: {
-      datalabels: {
-        display: false,
-      },
-      legend: {
-        position: "top",
-      },
+      datalabels: false,
+      legend: { position: "top" },
       tooltip: {
         callbacks: {
           label: function (context) {
@@ -97,9 +92,7 @@ const PersonInvoiceChart = ({ personId, onBack }) => {
       y: {
         beginAtZero: true,
         ticks: {
-          callback: function (value) {
-            return value.toLocaleString("cs-CZ") + " Kč";
-          },
+          callback: (value) => value.toLocaleString("cs-CZ") + " Kč",
         },
       },
     },
@@ -107,36 +100,36 @@ const PersonInvoiceChart = ({ personId, onBack }) => {
 
   return (
     <div>
-      <h4>{data.personName} — přehled faktur za období</h4>
+      <h4>{data.personName} — Měsíční vývoj příjmů a výdajů</h4>
       <button className="btn btn-secondary mb-3" onClick={onBack}>
         Zpět na přehled osob
       </button>
 
-      <div className="d-flex mb-4 gap-2 align-items-center">
-        <label>Od roku:</label>
-        <select
-          className="form-select w-auto"
-          value={yearFrom}
-          onChange={(e) => setYearFrom(Number(e.target.value))}
-        >
-          {AVAILABLE_YEARS.map((y) => (
-            <option key={y} value={y}>{y}</option>
-          ))}
-        </select>
+      <div className="d-flex gap-3 align-items-center mb-4">
+        <div>
+          <label>Od roku:</label>
+          <select className="form-select" value={yearFrom} onChange={(e) => setYearFrom(Number(e.target.value))}>
+            {availableYears.map((y) => (
+              <option key={y} value={y}>
+                {y}
+              </option>
+            ))}
+          </select>
+        </div>
 
-        <label>Do roku:</label>
-        <select
-          className="form-select w-auto"
-          value={yearTo}
-          onChange={(e) => setYearTo(Number(e.target.value))}
-        >
-          {AVAILABLE_YEARS.map((y) => (
-            <option key={y} value={y}>{y}</option>
-          ))}
-        </select>
+        <div>
+          <label>Do roku:</label>
+          <select className="form-select" value={yearTo} onChange={(e) => setYearTo(Number(e.target.value))}>
+            {availableYears.map((y) => (
+              <option key={y} value={y}>
+                {y}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
-      <div style={{ maxWidth: "800px", margin: "0 auto"}}>
+      <div style={{ maxWidth: "800px", margin: "0 auto" }}>
         <Line data={chartData} options={options} />
       </div>
     </div>

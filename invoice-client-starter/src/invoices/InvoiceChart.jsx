@@ -23,7 +23,7 @@ const InvoiceChart = () => {
   const currentYear = new Date().getFullYear();
   const availableYears = [2020, 2021, 2022, 2023, 2024, 2025];
 
-  const [fromYear, setFromYear] = useState(2022);
+  const [fromYear, setFromYear] = useState(2020);
   const [toYear, setToYear] = useState(currentYear);
   const [viewMode, setViewMode] = useState("monthly");
   const [chartData, setChartData] = useState(null);
