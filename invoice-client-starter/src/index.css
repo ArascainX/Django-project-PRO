@@ -5,13 +5,15 @@
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  background-color: #ffffff;
+  
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
 
 a {
   font-weight: 500;
@@ -42,12 +44,13 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: #000000;
   cursor: pointer;
   transition: border-color 0.25s;
 }
 button:hover {
-  border-color: #646cff;
+  border-color: #151ecb;
+  box-shadow: 0 2px 12px rgba(3, 46, 239, 0.8);
 }
 button:focus,
 button:focus-visible {
@@ -65,4 +68,103 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+.subscribe-advantages {
+  border: 1.5px solid #2563eb; /* modrý rámeček kolem celého bloku výhod */
+  border-radius: 0.75rem;
+  padding: 1rem 1.5rem;
+  max-width: 320px;
+  margin: 0 auto 1.5rem;
+  background-color: #f0f7ff; /* jemné modré pozadí */
+  text-align: left; /* aby ikonky a text byly pěkně zarovnané vlevo */
+}
+
+.subscribe-advantages p {
+  margin: 0.6rem 0; /* dostatečná mezera mezi jednotlivými výhodami */
+  font-weight: 600;
+  font-size: 1rem;
+  color: #1e3a8a; /* tmavší modrá barva textu */
+}
+
+.subscribe-button {
+  background: linear-gradient(90deg, #000000 0%, #2563eb 100%);
+  color: white;
+  padding: 0.75rem 0;
+  font-weight: 600;
+  border-radius: 0.75rem;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  font-size: 1.1rem;
+  text-align: center;
+  transition: background-color 0.3s ease;
+  box-shadow: 0 2px 8px rgb(37 99 235 / 0.5);
+}
+
+.subscribe-button:hover {
+  background-color: #000000;
+  box-shadow: 0 2px 12px rgb(0 0 0 / 0.8);
+}
+
+.subscribe-page {
+  max-width: 400px;
+  margin: 2rem auto;
+  padding: 1rem 2rem;
+  text-align: center;
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #464545;
+  border-radius: 1rem;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
+}
+
+.navbar {
+  content: "•";
+  color: #2563eb;
+  font-size: 1.2rem;
+  font-weight: bold;
+  position: relative;
+}
+
+
+.navbar-center {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.navbar-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem; /* rovnoměrné rozestupy */
+  padding: 0;
+  list-style: none;
+  margin: 0;
+  align-items: center;
+}
+
+.nav-item {
+  position: relative;
+}
+
+.nav-item::before {
+  content: "•";
+  color: #2563eb; /* modrá tečka */
+  font-size: 1.25rem;
+  position: absolute;
+  left: -1.2rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.nav-link {
+  font-weight: 600;
+  color: #1e3a8a;
+  text-decoration: none;
+}
+
+.nav-link:hover {
+  text-decoration: underline;
+  color: #0f172a;
 }
