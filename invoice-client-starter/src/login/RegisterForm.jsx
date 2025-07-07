@@ -1,58 +1,101 @@
 import React, { useState } from "react";
 
+
 const RegisterForm = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    username: "",
+    password: "",
+    confirmPassword: "",
+  });
   const [message, setMessage] = useState(null);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleRegister = async (e) => {
     e.preventDefault();
 
+    // Validace hesla
+    if (formData.password !== formData.confirmPassword) {
+      setMessage("❌ Hesla se neshodují.");
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setMessage("❌ Heslo musí mít alespoň 6 znaků.");
+      return;
+    }
+
     const res = await fetch("http://localhost:8000/api/register/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username: formData.username, password: formData.password }),
     });
 
     const data = await res.json();
 
     if (res.ok) {
       setMessage("✅ Registrace úspěšná, můžeš se přihlásit.");
-      setUsername("");
-      setPassword("");
+      setFormData({ firstName: "", lastName: "", username: "", password: "", confirmPassword: "" });
     } else {
       setMessage(data.error || "❌ Něco se nepovedlo.");
     }
   };
 
   return (
-    <div className="p-4 max-w-sm mx-auto">
-      <h2 className="text-xl font-bold mb-4">Registrace</h2>
-      {message && <p className="mb-4">{message}</p>}
+    <div className="form-container">
+      <h2>Register</h2>
+      <p>Signup now and get full access to our app.</p>
+      {message && <p className="message">{message}</p>}
       <form onSubmit={handleRegister}>
+        <div className="name-fields">
+          <input
+            type="text"
+            name="firstName"
+            placeholder="Firstname"
+            value={formData.firstName}
+            onChange={handleChange}
+            required
+          />
+          <input
+            type="text"
+            name="lastName"
+            placeholder="Lastname"
+            value={formData.lastName}
+            onChange={handleChange}
+            required
+          />
+        </div>
         <input
           type="text"
-          placeholder="Uživatelské jméno"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          name="username"
+          placeholder="Email"
+          value={formData.username}
+          onChange={handleChange}
           required
-          className="border p-2 mb-2 w-full"
         />
         <input
           type="password"
-          placeholder="Heslo"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          name="password"
+          placeholder="Password"
+          value={formData.password}
+          onChange={handleChange}
           required
-          className="border p-2 mb-4 w-full"
         />
-        <button
-          type="submit"
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 w-full"
-        >
-          Registrovat
-        </button>
+        <input
+          type="password"
+          name="confirmPassword"
+          placeholder="Confirm password"
+          value={formData.confirmPassword}
+          onChange={handleChange}
+          required
+        />
+        <button type="submit">Submit</button>
       </form>
+      <p className="mt-2 text-center">Already have an account? <a href="/login">Sign in</a></p>
     </div>
   );
 };

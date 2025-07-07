@@ -1,19 +1,18 @@
+/* =========================
+   ZÁKLADNÍ STYLY & RESET
+   ========================= */
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
   background-color: #ffffff;
-  
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-
 
 a {
   font-weight: 500;
@@ -70,25 +69,26 @@ button:focus-visible {
   }
 }
 
+/* =========================
+   SUBSCRIPTION SEKCE
+   ========================= */
 .subscribe-advantages {
-  border: 1.5px solid #2563eb; /* modrý rámeček kolem celého bloku výhod */
+  border: 1.5px solid #008ee6;
   border-radius: 0.75rem;
   padding: 1rem 1.5rem;
   max-width: 320px;
   margin: 0 auto 1.5rem;
-  background-color: #f0f7ff; /* jemné modré pozadí */
-  text-align: left; /* aby ikonky a text byly pěkně zarovnané vlevo */
+  background-color: #2e4057;
+  text-align: left;
 }
-
 .subscribe-advantages p {
-  margin: 0.6rem 0; /* dostatečná mezera mezi jednotlivými výhodami */
+  margin: 0.6rem 0;
   font-weight: 600;
   font-size: 1rem;
-  color: #1e3a8a; /* tmavší modrá barva textu */
+  color: #a0b3cc;
 }
-
 .subscribe-button {
-  background: linear-gradient(90deg, #000000 0%, #2563eb 100%);
+  background: linear-gradient(90deg, #1a2a44 0%, #008ee6 100%);
   color: white;
   padding: 0.75rem 0;
   font-weight: 600;
@@ -99,14 +99,12 @@ button:focus-visible {
   font-size: 1.1rem;
   text-align: center;
   transition: background-color 0.3s ease;
-  box-shadow: 0 2px 8px rgb(37 99 235 / 0.5);
+  box-shadow: 0 2px 8px rgba(0, 142, 230, 0.5);
 }
-
 .subscribe-button:hover {
-  background-color: #000000;
-  box-shadow: 0 2px 12px rgb(0 0 0 / 0.8);
+  background: #008ee6;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.8);
 }
-
 .subscribe-page {
   max-width: 400px;
   margin: 2rem auto;
@@ -114,19 +112,20 @@ button:focus-visible {
   text-align: center;
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #464545;
+  background-color: #1a2a44;
   border-radius: 1rem;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
 }
 
+/* =========================
+   NAVIGACE (NAVBAR)
+   ========================= */
 .navbar {
-  content: "•";
-  color: #2563eb;
-  font-size: 1.2rem;
-  font-weight: bold;
-  position: relative;
+  background-color: #1a2a44;
+  border-bottom: 2px solid #008ee6;
+  padding: 1rem 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 }
-
 
 .navbar-center {
   display: flex;
@@ -137,7 +136,7 @@ button:focus-visible {
 .navbar-nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 1.5rem; /* rovnoměrné rozestupy */
+  gap: 2rem;
   padding: 0;
   list-style: none;
   margin: 0;
@@ -146,25 +145,923 @@ button:focus-visible {
 
 .nav-item {
   position: relative;
+  padding-left: 1.5rem;
 }
 
 .nav-item::before {
   content: "•";
-  color: #2563eb; /* modrá tečka */
+  color: #008ee6;
   font-size: 1.25rem;
   position: absolute;
-  left: -1.2rem;
+  left: 0;
   top: 50%;
   transform: translateY(-50%);
 }
 
 .nav-link {
   font-weight: 600;
-  color: #1e3a8a;
+  color: #e0f2ff;
   text-decoration: none;
+  transition: color 0.2s ease, text-shadow 0.2s ease;
 }
 
 .nav-link:hover {
+  color: #ffffff;
+  text-shadow: 0 0 6px #008ee6;
+}
+
+.nav-link.active {
+  color: #008ee6;
+  font-weight: bold;
   text-decoration: underline;
-  color: #0f172a;
+}
+
+/* =========================
+   FORMULÁŘE (OBECNÉ)
+   ========================= */
+.form-container {
+  padding: 20px;
+  max-width: 400px;
+  margin: 0 auto;
+  background-color: #1a2a44;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  color: white;
+}
+.form-container h2 {
+  color: #008ee6;
+  font-size: 24px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+.form-container p {
+  color: #a0b3cc;
+  margin-bottom: 20px;
+  text-align: center;
+}
+.form-container form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+.form-container .name-fields {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+.form-container input {
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #2e4057;
+  border-radius: 4px;
+  font-size: 16px;
+  width: 100%;
+  background-color: #2e4057;
+  color: white;
+}
+.form-container input[type="text"],
+.form-container input[type="password"] {
+  width: 100%;
+}
+.form-container .name-fields input {
+  width: 50%;
+}
+.form-container input::placeholder {
+  color: #a0b3cc;
+}
+.form-container button {
+  padding: 12px;
+  background-color: #008ee6;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  width: 100%;
+}
+.form-container button:hover {
+  background-color: #0077c2;
+}
+.form-container a {
+  color: #008ee6;
+  text-decoration: none;
+}
+.form-container a:hover {
+  text-decoration: underline;
+}
+.form-container .message {
+  margin-bottom: 15px;
+  text-align: center;
+}
+.form-container .error {
+  color: #ff4d4d;
+}
+.form-container .success {
+  color: #008ee6;
+}
+
+/* =========================
+   DASHBOARD STATUS
+   ========================= */
+.dashboard-status {
+  padding: 1rem;
+  max-width: 400px;
+  margin: 0 auto;
+  background-color: #1a2a44;
+  border-radius: 0.75rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  color: white;
+  text-align: center;
+}
+.dashboard-status h1 {
+  color: #008ee6;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+.dashboard-status p {
+  margin-bottom: 1rem;
+  color: #a0b3cc;
+}
+.dashboard-status p strong {
+  color: white;
+  font-weight: bold;
+}
+.dashboard-status .subscription-section {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1.5px solid #008ee6;
+}
+.dashboard-status .subscription-section h2 {
+  color: #008ee6;
+  font-size: 1.125rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+.dashboard-status .subscription-section .active {
+  color: #00cc99;
+}
+.dashboard-status .subscription-section .inactive {
+  color: #ff4d4d;
+}
+.dashboard-status .subscribe-advantages {
+  border: 1.5px solid #008ee6;
+  border-radius: 0.75rem;
+  padding: 1rem 1.5rem;
+  max-width: 320px;
+  margin: 1.5rem auto 1.5rem;
+  background-color: #2e4057;
+  text-align: left;
+}
+.dashboard-status .subscribe-advantages p {
+  margin: 0.6rem 0;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #a0b3cc;
+}
+.dashboard-status button {
+  padding: 0.75rem 1rem;
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+.dashboard-status button:hover {
+  background-color: #e60000;
+}
+.dashboard-status .loading {
+  text-align: center;
+  color: #a0b3cc;
+}
+
+/* =========================
+   INVOICE DETAIL & PDF
+   ========================= */
+.invoice {
+  padding: 1.4rem;
+  padding-right: 15px;
+  max-width: 800px;
+  margin: 0 auto;
+  background-color: #1a2a44;
+  border-radius: 0.75rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  color: white;
+}
+.invoice h1 {
+  color: #008ee6;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+.invoice hr {
+  border: 0;
+  border-top: 1px solid #008ee6;
+  margin-bottom: 1rem;
+}
+.invoice .grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+@media (min-width: 768px) {
+  .invoice .grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.invoice h3 {
+  color: #008ee6;
+  font-size: 1.125rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+.invoice p {
+  margin: 0.25rem 0;
+  color: #a0b3cc;
+}
+.invoice p strong {
+  color: white;
+  font-weight: bold;
+}
+.invoice .loading,
+.invoice .error {
+  text-align: center;
+  color: #a0b3cc;
+}
+.invoice .error {
+  color: #ff4d4d;
+}
+.invoice .pdf-section {
+  text-align: center;
+  margin-top: 1.5rem;
+}
+.invoice .button-group {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.invoice button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background-color 0.3s ease;
+}
+.invoice .download-button {
+  background-color: #ff9800;
+  color: white;
+}
+.invoice .download-button:hover {
+  background-color: #e68a00;
+}
+.invoice .display-button {
+  background-color: #008ee6;
+  color: white;
+}
+.invoice .display-button:hover {
+  background-color: #0077c2;
+}
+.invoice .close-button {
+  background-color: #ff4d4d;
+  color: white;
+  margin-top: 1rem;
+  display: block;
+  width: 100%;
+  max-width: 200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.invoice .close-button:hover {
+  background-color: #e60000;
+}
+.invoice .pdf-container {
+  display: block;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+.invoice .pdf-container .page {
+  margin-bottom: 1rem;
+  display: inline-block;
+}
+.invoice button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* =========================
+   INVOICE FORM
+   ========================= */
+.invoice-form {
+  padding: 1.4rem;
+  max-width: 800px;
+  margin: 0 auto;
+  background-color: #1a2a44;
+  border-radius: 0.75rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  color: white;
+}
+.invoice-form h1 {
+  color: #008ee6;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+.invoice-form hr {
+  border: 0;
+  border-top: 1px solid #008ee6;
+  margin-bottom: 1rem;
+}
+.invoice-form .error {
+  margin-bottom: 1rem;
+  color: #ff4d4d;
+  text-align: center;
+}
+.invoice-form .flash-message {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  text-align: center;
+}
+.invoice-form .flash-message.success {
+  background-color: #00cc99;
+  color: white;
+}
+.invoice-form .input-group {
+  margin-bottom: 1rem;
+}
+.invoice-form label {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: #008ee6;
+  font-weight: bold;
+}
+.invoice-form input,
+.invoice-form select,
+.invoice-form .react-datepicker__input-container input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #2e4057;
+  border-radius: 0.5rem;
+  background-color: #2e4057;
+  color: white;
+  font-size: 0.875rem;
+}
+.invoice-form .react-datepicker__input-container input {
+  margin-left: 20px;
+}
+.invoice-form input::placeholder,
+.invoice-form .react-datepicker__input-container input::placeholder {
+  color: #a0b3cc;
+}
+.invoice-form select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23a0b3cc' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 12px;
+}
+.invoice-form .react-datepicker__input-container {
+  width: 100%;
+}
+.invoice-form button[type="submit"] {
+  padding: 0.75rem 1.5rem;
+  background-color: #008ee6;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+  width: 100%;
+  margin-top: 20px;
+}
+.invoice-form button[type="submit"]:hover {
+  background-color: #0077c2;
+}
+
+/* =========================
+   INVOICE INDEX (TABULKA, FILTRY)
+   ========================= */
+.invoice-index {
+  padding: 1.4rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  background-color: #1a2a44;
+  border-radius: 0.75rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  color: white;
+}
+.invoice-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  gap: 1rem;
+}
+.invoice-header h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #008ee6;
+  padding-top: 10px;
+}
+.invoice-header .btn-success {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+}
+.invoice-index h1 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #008ee6;
+  margin-bottom: 1.5rem;
+}
+.invoice-index form {
+  margin-bottom: 2rem;
+}
+.invoice-index input.form-control {
+  background-color: #2e4057;
+  border: 1px solid #3d566e;
+  color: white;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  padding: 0.5rem;
+}
+.invoice-index input.form-control::placeholder {
+  color: #a0b3cc;
+}
+.invoice-index .btn {
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+}
+.invoice-index table {
+  width: 100%;
+  background-color: #2e4057;
+  border-collapse: collapse;
+  color: white;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+.invoice-index th,
+.invoice-index td {
+  padding: 0.75rem;
+  border: 1px solid #3d566e;
+  text-align: center;
+  color: white;
+}
+.invoice-index th {
+  background-color: #1f3a5a;
+  color: #00bfff;
+  font-weight: bold;
+}
+.invoice-index tbody tr:nth-child(odd),
+.invoice-index tbody tr:nth-child(even) {
+  background-color: #273d5c;
+  color: white;
+}
+.invoice-index tbody tr:hover {
+  background-color: #345070;
+}
+.invoice-index .btn-group .btn {
+  margin: 0 0.25rem;
+  padding: 0.4rem 0.6rem;
+}
+.invoice-index .btn-info {
+  background-color: #17a2b8;
+  border: none;
+}
+.invoice-index .btn-warning {
+  background-color: #f0ad4e;
+  border: none;
+  color: black;
+}
+.invoice-index .btn-danger {
+  background-color: #d9534f;
+  border: none;
+}
+.invoice-index .btn-success {
+  background-color: #28a745;
+  border: none;
+}
+.invoice-index .btn-secondary {
+  background-color: #6c757d;
+  border: none;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+}
+.invoice-index .alert-warning {
+  background-color: #ffc107;
+  color: #1a1a1a;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+/* =========================
+   INVOICE CHART
+   ========================= */
+.invoice-chart {
+  padding: 1.4rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  background-color: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  color: white;
+}
+.invoice-chart label {
+  color: #00bfff;
+  font-weight: bold;
+  margin-bottom: 0.3rem;
+}
+.invoice-chart select {
+  width: 100%;
+  padding: 0.5rem;
+  background-color: white;
+  color: black;
+  border: 1px solid #3d566e;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+}
+.invoice-chart select:focus {
+  outline: none;
+  border-color: #00bfff;
+}
+.invoice-chart .row {
+  margin-bottom: 1rem;
+}
+.invoice-chart .alert-danger {
+  background-color: #dc3545;
+  color: white;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-top: 1rem;
+  text-align: center;
+}
+.invoice-chart-summary {
+  margin-top: 1.5rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #00bfff;
+}
+
+/* =========================
+   INVOICE STATISTICS
+   ========================= */
+.invoice-statistics {
+  padding: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  background-color: #1a2a44;
+  border-radius: 0.75rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+  color: white;
+}
+.invoice-statistics h1,
+.invoice-statistics h2,
+.invoice-statistics h3 {
+  color: #00bfff;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+.invoice-statistics hr {
+  border: 0;
+  border-top: 1px solid #00bfff;
+  margin-bottom: 1.5rem;
+}
+.invoice-statistics ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 2rem;
+}
+.invoice-statistics li {
+  margin-bottom: 0.5rem;
+}
+.invoice-statistics input[type="text"] {
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid #3d566e;
+  background-color: #2e4057;
+  color: white;
+  font-size: 1rem;
+}
+.invoice-statistics input::placeholder {
+  color: #a0b3cc;
+}
+.invoice-statistics table {
+  background-color: #2e4057;
+  color: white;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  width: 100%;
+}
+.invoice-statistics th,
+.invoice-statistics td {
+  text-align: center;
+  padding: 0.75rem;
+  border: 1px solid #3d566e;
+  color: white;
+}
+.invoice-statistics thead {
+  background-color: #1f3a5a;
+  color: #00bfff;
+  font-weight: bold;
+}
+.invoice-statistics tbody tr {
+  cursor: pointer;
+  background-color: #273d5c;
+  transition: background-color 0.2s ease;
+}
+.invoice-statistics tbody tr,
+.invoice-statistics tbody tr td {
+  color: white !important;
+}
+.invoice-statistics tbody tr:hover {
+  background-color: #345070;
+}
+.invoice-statistics .alert-danger {
+  background-color: #dc3545;
+  color: white;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+/* =========================
+   PERSON CHART
+   ========================= */
+
+.person-chart {
+  padding: 1.5rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  background-color: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  color: black;
+}
+.person-chart .chart-title {
+  color: #00bfff;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+.person-chart .chart-controls {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-end;
+}
+.person-chart .chart-controls > div {
+  flex: 1;
+  max-width: 200px;
+}
+.person-chart .chart-controls label {
+  color: #00bfff;
+  font-weight: bold;
+  margin-bottom: 0.3rem;
+  display: block;
+}
+.person-chart .form-select {
+  width: 100%;
+  padding: 0.5rem;
+  background-color: white;
+  color: black;
+  border: 1px solid #3d566e;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+}
+.person-chart .form-select:focus {
+  outline: none;
+  border-color: #00bfff;
+}
+.person-chart .chart-wrapper {
+  height: 400px;
+}
+
+/* =========================
+   PERSON DETAIL
+   ========================= */
+
+.person-detail {
+  padding: 1.4rem;
+  max-width: 800px;
+  margin: 0 auto;
+  background-color: #1a2a44;
+  border-radius: 0.75rem;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
+  color: white;
+}
+
+.person-detail h1 {
+  font-size: 1.8rem;
+  color: #008ee6;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.person-detail h3 {
+  font-size: 1.4rem;
+  color: #00bfff;
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+
+.person-detail p {
+  margin-bottom: 0.6rem;
+  color: #a0b3cc;
+}
+
+.person-detail p strong {
+  color: white;
+  font-weight: bold;
+}
+
+.person-detail .btn {
+  padding: 0.4rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.person-detail .invoice-section {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #008ee6;
+}
+
+.person-detail .invoice-section h4 {
+  font-size: 1.3rem;
+  color: #00bfff;
+  margin-bottom: 0.75rem;
+}
+
+.person-detail .invoice-section p {
+  margin-bottom: 1rem;
+}
+
+.person-detail .invoice-list {
+  list-style: none;
+  padding: 0;
+}
+
+.person-detail .invoice-list li {
+  border: 1px solid #3d566e;
+  background-color: #2e4057;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  margin-bottom: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.person-detail .invoice-list li:hover {
+  background-color: #345070;
+}
+
+.person-detail .button-group {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.person-detail .display-button {
+  background-color: #008ee6; /* modrá */
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.person-detail .display-button:hover {
+  background-color: #0077c2;
+}
+
+.person-detail .download-button {
+  background-color: #ff9800; /* oranžová */
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.person-detail .download-button:hover {
+  background-color: #e68a00;
+}
+
+/* =========================
+   PERSON FORM
+   ========================= */
+
+.person-form {
+  padding: 1.4rem;
+  max-width: 800px;
+  margin: 0 auto;
+  background-color: #1a2a44;
+  border-radius: 0.75rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  color: white;
+}
+
+.person-form h1 {
+  color: #008ee6;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.person-form hr {
+  border: 0;
+  border-top: 1px solid #008ee6;
+  margin-bottom: 1rem;
+}
+
+.person-form .alert {
+  margin-bottom: 1rem;
+  background-color: #ff4d4d;
+  color: white;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  text-align: center;
+}
+
+.person-form .input-group {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.person-form .input-group label {
+  margin-bottom: 0.25rem;
+  color: #008ee6;
+  font-weight: bold;
+}
+
+.person-form .input-group input[type="text"],
+.person-form .input-group input[type="email"],
+.person-form .input-group input[type="number"],
+.person-form .input-group select,
+.person-form .input-group textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #2e4057;
+  border-radius: 0.5rem;
+  background-color: #2e4057;
+  color: white;
+  font-size: 0.875rem;
+}
+
+.person-form .input-group input::placeholder,
+.person-form .input-group textarea::placeholder {
+  color: #a0b3cc;
+}
+
+.person-form .input-group select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23a0b3cc' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 12px;
+}
+
+.person-form .radio-group {
+  display: flex;
+  gap: 2rem;
+  margin-top: 1rem;
+  color: white;
+}
+
+.person-form button[type="submit"],
+.person-form input[type="submit"] {
+  margin-top: 1.5rem;
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  background-color: #008ee6;
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.person-form button[type="submit"]:hover,
+.person-form input[type="submit"]:hover {
+  background-color: #0077c2;
 }

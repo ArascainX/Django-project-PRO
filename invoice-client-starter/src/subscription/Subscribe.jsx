@@ -31,7 +31,7 @@ const Subscribe = () => {
 
   return (
     <div className="text-center subscribe-page">
-      <h2 className="subscribe-title">Předplatné Premium</h2>
+      <h2 className="subscribe-title"><u>Předplatné Premium</u></h2>
       <p className="subscribe-text">
         Získej přístup k <strong>prémiovým funkcím</strong> a podpoř vývoj aplikace!
       </p>

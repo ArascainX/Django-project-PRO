@@ -6,7 +6,6 @@ import FlashMessage from "../components/FlashMessage";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-
 const InvoiceForm = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -80,10 +79,10 @@ const InvoiceForm = () => {
   };
 
   return (
-    <div>
+    <div className="invoice-form">
       <h1>{id ? "Upravit" : "Vytvořit"} fakturu</h1>
       <hr />
-      {errorState && <div className="alert alert-danger">{errorState}</div>}
+      {errorState && <div className="error">{errorState}</div>}
       {sentState && (
         <FlashMessage
           theme={successState ? "success" : ""}
@@ -100,110 +99,106 @@ const InvoiceForm = () => {
         handleChange={(e) => setInvoice({ ...invoice, invoiceNumber: e.target.value })}
       />
 
+      <div className="input-group">
+        <label>Prodávající</label>
+        <select
+          value={invoice.seller}
+          onChange={(e) => {
+            setInvoice({ ...invoice, seller: e.target.value });
+            fetchPersonName(e.target.value, setSellerName);
+          }}
+          required
+        >
+          <option value="" disabled hidden>
+            {sellerName || "-- Vyberte osobu --"}
+          </option>
+          {people.map((p) => (
+            <option key={p._id} value={p._id}>
+              {p.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="input-group">
+        <label>Kupující</label>
+        <select
+          value={invoice.buyer}
+          onChange={(e) => {
+            setInvoice({ ...invoice, buyer: e.target.value });
+            fetchPersonName(e.target.value, setBuyerName);
+          }}
+          required
+        >
+          <option value="" disabled hidden>
+            {buyerName || "-- Vyberte osobu --"}
+          </option>
+          {people.map((p) => (
+            <option key={p._id} value={p._id}>
+              {p.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="input-group">
+        <label>Datum vystavení</label>
+        <DatePicker
+          selected={invoice.issued}
+          onChange={(date) => setInvoice({ ...invoice, issued: date })}
+          dateFormat="dd-MM-yyyy"
+          placeholderText="dd-MM-yyyy"
+        />
+      </div>
+
+      <div className="input-group">
+        <label>Datum splatnosti</label>
+        <DatePicker
+          selected={invoice.dueDate}
+          onChange={(date) => setInvoice({ ...invoice, dueDate: date })}
+          dateFormat="dd-MM-yyyy"
+          placeholderText="dd-MM-yyyy"
+        />
+      </div>
+
+      <InputField
+        required={true}
+        type="text"
+        name="product"
+        label="Produkt"
+        value={invoice.product}
+        handleChange={(e) => setInvoice({ ...invoice, product: e.target.value })}
+      />
+
+      <InputField
+        required={true}
+        type="number"
+        name="price"
+        label="Cena bez DPH"
+        value={invoice.price}
+        handleChange={(e) => setInvoice({ ...invoice, price: e.target.value })}
+      />
+
+      <InputField
+        required={true}
+        type="number"
+        name="vat"
+        label="DPH (%)"
+        value={invoice.vat}
+        handleChange={(e) => setInvoice({ ...invoice, vat: e.target.value })}
+      />
+
+      <InputField
+        required={false}
+        type="text"
+        name="note"
+        label="Poznámka"
+        value={invoice.note}
+        handleChange={(e) => setInvoice({ ...invoice, note: e.target.value })}
+      />
+
       <form onSubmit={handleSubmit}>
-        <div className="mb-3">
-          <label className="form-label">Prodávající</label>
-          <select
-            className="form-select"
-            value={invoice.seller}
-            onChange={(e) => {
-              setInvoice({ ...invoice, seller: e.target.value });
-              fetchPersonName(e.target.value, setSellerName);
-            }}
-            required
-          >
-            <option value="" disabled hidden>
-              {sellerName || "-- Vyberte osobu --"}
-            </option>
-            {people.map((p) => (
-              <option key={p._id} value={p._id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="mb-3">
-          <label className="form-label">Kupující</label>
-          <select
-            className="form-select"
-            value={invoice.buyer}
-            onChange={(e) => {
-              setInvoice({ ...invoice, buyer: e.target.value });
-              fetchPersonName(e.target.value, setBuyerName);
-            }}
-            required
-          >
-            <option value="" disabled hidden>
-              {buyerName || "-- Vyberte osobu --"}
-            </option>
-            {people.map((p) => (
-              <option key={p._id} value={p._id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="mb-3">
-          <label className="form-label">Datum vystavení</label>
-          <DatePicker
-            selected={invoice.issued}
-            onChange={(date) => setInvoice({ ...invoice, issued: date })}
-            className="form-control"
-            dateFormat="dd-MM-yyyy"
-            placeholderText="dd-MM-yyyy"
-          />
-        </div>
-
-        <div className="mb-3">
-          <label className="form-label">Datum splatnosti</label>
-          <DatePicker
-            selected={invoice.dueDate}
-            onChange={(date) => setInvoice({ ...invoice, dueDate: date })}
-            className="form-control"
-            dateFormat="dd-MM-yyyy"
-            placeholderText="dd-MM-yyyy"
-          />
-        </div>
-
-        <InputField
-          required={true}
-          type="text"
-          name="product"
-          label="Produkt"
-          value={invoice.product}
-          handleChange={(e) => setInvoice({ ...invoice, product: e.target.value })}
-        />
-
-        <InputField
-          required={true}
-          type="number"
-          name="price"
-          label="Cena bez DPH"
-          value={invoice.price}
-          handleChange={(e) => setInvoice({ ...invoice, price: e.target.value })}
-        />
-
-        <InputField
-          required={true}
-          type="number"
-          name="vat"
-          label="DPH (%)"
-          value={invoice.vat}
-          handleChange={(e) => setInvoice({ ...invoice, vat: e.target.value })}
-        />
-
-        <InputField
-          required={false}
-          type="text"
-          name="note"
-          label="Poznámka"
-          value={invoice.note}
-          handleChange={(e) => setInvoice({ ...invoice, note: e.target.value })}
-        />
-
-        <input type="submit" className="btn btn-primary" value="Uložit" />
+        <button type="submit">Uložit</button>
       </form>
     </div>
   );

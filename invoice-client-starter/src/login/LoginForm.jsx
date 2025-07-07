@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+
 const LoginForm = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -22,40 +23,34 @@ const LoginForm = () => {
       localStorage.setItem("access_token", data.access);
       localStorage.setItem("refresh_token", data.refresh);
       setError(null);
-      navigate("/dashboard"); // Přesměrování na dashboard po úspěšném přihlášení
+      navigate("/dashboard");
     } else {
       setError("Neplatné uživatelské jméno nebo heslo");
     }
   };
 
   return (
-    <div className="p-4 max-w-sm mx-auto">
-      <h2 className="text-xl font-bold mb-4">Přihlášení</h2>
-      {error && <p className="mb-4 text-red-600">{error}</p>}
+    <div className="form-container">
+      <h2>Login</h2>
+      {error && <p className="message error">{error}</p>}
       <form onSubmit={handleLogin}>
         <input
           type="text"
-          placeholder="Uživatelské jméno"
+          placeholder="Email"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           required
-          className="border p-2 mb-2 w-full"
         />
         <input
           type="password"
-          placeholder="Heslo"
+          placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          className="border p-2 mb-4 w-full"
         />
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full"
-        >
-          Přihlásit se
-        </button>
+        <button type="submit">Submit</button>
       </form>
+      <p className="mt-2 text-center">Don't have an account? <a href="/register">Sign up</a></p>
     </div>
   );
 };

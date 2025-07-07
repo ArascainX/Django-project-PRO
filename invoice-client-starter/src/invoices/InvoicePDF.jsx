@@ -53,39 +53,38 @@ const InvoicePDF = ({ invoiceNumber }) => {
   };
 
   return (
-    <div className="p-4">
-      <div className="flex space-x-4 mb-4">
+    <div className="invoice">
+      <div className="button-group">
         <button
           onClick={downloadInvoice}
           disabled={loading || !invoiceNumber}
-          className="btn btn-sm btn-warning"
+          className="download-button"
         >
           {loading ? 'Generuji...' : 'Stáhnout PDF'}
         </button>
         <button
           onClick={displayInvoice}
           disabled={loading || !invoiceNumber}
-          className="btn btn-sm btn-info"
+          className="display-button"
         >
           {loading ? 'Generuji...' : 'Zobrazit PDF'}
         </button>
       </div>
-      {error && <div className="text-red-500 mb-4">{error}</div>}
+      {error && <div className="error">{error}</div>}
       {pdfUrl && (
-        <div>
+        <div className="pdf-container">
           <Document
             file={pdfUrl}
             onLoadSuccess={onDocumentLoadSuccess}
             onLoadError={(error) => setError('Chyba při načítání PDF.')}
             loading="Načítání PDF..."
-            className="flex justify-center"
           >
             {Array.from(new Array(numPages), (el, index) => (
               <Page
                 key={`page_${index + 1}`}
                 pageNumber={index + 1}
                 width={600}
-                className="mb-4"
+                className="page"
                 renderAnnotationLayer={false}
                 renderTextLayer={false}
               />
@@ -96,7 +95,7 @@ const InvoicePDF = ({ invoiceNumber }) => {
               setPdfUrl(null);
               setNumPages(null);
             }}
-            className="btn btn-sm btn-danger mt-4"
+            className="close-button"
           >
             Zavřít PDF
           </button>

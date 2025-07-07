@@ -25,7 +25,7 @@ const InvoiceStatistics = () => {
   );
 
   return (
-    <div>
+    <div className="invoice-statistics">
       <h1>Statistiky faktur</h1>
       <hr />
       {error && <div className="alert alert-danger">{error}</div>}
@@ -53,7 +53,7 @@ const InvoiceStatistics = () => {
         <div className="mb-5">
           <InvoiceChart />
         </div>
-
+        
       <h3 className="mt-4">Statistiky společností</h3>
       {selectedPersonId ? (
           <PersonInvoiceChart

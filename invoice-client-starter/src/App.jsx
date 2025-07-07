@@ -2,7 +2,7 @@ import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import {
   BrowserRouter as Router,
-  Link,
+  NavLink,
   Route,
   Routes,
   Navigate,
@@ -21,7 +21,7 @@ import SubscriptionSuccess from "./subscription/SubscriptionSuccess";
 import SubscriptionCancelled from "./subscription/SubscriptionCancelled"; 
 import LoginForm from "./login/LoginForm";
 import RegisterForm from "./login/RegisterForm";
-import Dashboard from "./subscription/Dashboard";
+import Dashboard from "./subscription/DashboardStatus";
 
 export function App() {
   return (
@@ -31,25 +31,74 @@ export function App() {
           <div className="navbar-center">
             <ul className="navbar-nav">
               <li className="nav-item">
-                <Link to={"/persons"} className="nav-link">Osoby</Link>
+                <NavLink
+                  to="/persons"
+                  className={({ isActive }) =>
+                    "nav-link" + (isActive ? " active" : "")
+                  }
+                >
+                  Osoby
+                </NavLink>
               </li>
               <li className="nav-item">
-                <Link to={"/invoices"} className="nav-link">Faktury</Link>
+                <NavLink
+                  to="/invoices"
+                  className={({ isActive }) =>
+                    "nav-link" + (isActive ? " active" : "")
+                  }
+                >
+                  Faktury
+                </NavLink>
               </li>
               <li className="nav-item">
-                <Link to={"/statistics"} className="nav-link">Statistiky</Link>
+                <NavLink
+                  to="/statistics"
+                  className={({ isActive }) =>
+                    "nav-link" + (isActive ? " active" : "")
+                  }
+                >
+                  Statistiky
+                </NavLink>
               </li>
               <li className="nav-item">
-                <Link to={"/subscription"} className="nav-link">Předplatné</Link>
+                <NavLink
+                  to="/subscription"
+                  className={({ isActive }) =>
+                    "nav-link" + (isActive ? " active" : "")
+                  }
+                >
+                  Předplatné
+                </NavLink>
               </li>
               <li className="nav-item">
-                <Link to={"/login"} className="nav-link">Přihlášení</Link>
+                <NavLink
+                  to="/login"
+                  className={({ isActive }) =>
+                    "nav-link" + (isActive ? " active" : "")
+                  }
+                >
+                  Přihlášení
+                </NavLink>
               </li>
               <li className="nav-item">
-                <Link to={"/register"} className="nav-link">Registrace</Link>
+                <NavLink
+                  to="/register"
+                  className={({ isActive }) =>
+                    "nav-link" + (isActive ? " active" : "")
+                  }
+                >
+                  Registrace
+                </NavLink>
               </li>
               <li className="nav-item">
-                <Link to={"/dashboard"} className="nav-link">Profil</Link>
+                <NavLink
+                  to="/dashboard"
+                  className={({ isActive }) =>
+                    "nav-link" + (isActive ? " active" : "")
+                  }
+                >
+                  Profil
+                </NavLink>
               </li>
             </ul>
           </div>
@@ -77,11 +126,10 @@ export function App() {
           {/* Statistiky */}
           <Route path="statistics" element={<InvoiceStatistic />} />
 
-           {/* Přihlášení + registrace*/}
+          {/* Přihlášení + registrace */}
           <Route path="login" element={<LoginForm />} />
           <Route path="register" element={<RegisterForm />} />
           <Route path="dashboard" element={<Dashboard />} />
-
 
           {/* Předplatné */}
           <Route path="subscription">

@@ -37,24 +37,24 @@ const InvoiceDetail = () => {
   };
 
   if (loading) {
-    return <div className="p-4">Načítání...</div>;
+    return <div className="invoice loading">Načítání...</div>;
   }
 
   if (error) {
-    return <div className="p-4 text-red-500">{error}</div>;
+    return <div className="invoice error">{error}</div>;
   }
 
   if (!invoice) {
-    return <div className="p-4">Faktura nenalezena.</div>;
+    return <div className="invoice">Faktura nenalezena.</div>;
   }
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Detail faktury</h1>
-      <hr className="mb-4" />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="invoice">
+      <h1>Detail faktury</h1>
+      <hr />
+      <div className="grid">
         <div>
-          <h3 className="text-lg font-semibold">Číslo: {invoice.invoiceNumber}</h3>
+          <h3>Číslo: {invoice.invoiceNumber}</h3>
           <p><strong>Vystavitel:</strong> {invoice.seller?.name || 'Není uvedeno'}</p>
           <p><strong>Odběratel:</strong> {invoice.buyer?.name || 'Není uvedeno'}</p>
           <p><strong>Datum vystavení:</strong> {formatDate(invoice.issued)}</p>
@@ -65,7 +65,7 @@ const InvoiceDetail = () => {
           <p><strong>Poznámka:</strong> {invoice.note || 'Žádná'}</p>
         </div>
         <div>
-          <h3 className="text-lg font-semibold">Platební informace</h3>
+          <h3>Platební informace</h3>
           <p><strong>Stav platby:</strong> {invoice.paid ? 'Zaplaceno' : 'Nezaplaceno'}</p>
           <p><strong>Číslo účtu:</strong> {invoice.accountNumber || 'Není uvedeno'}</p>
           <p><strong>Variabilní symbol:</strong> {invoice.variableSymbol || invoice.invoiceNumber || 'Není uvedeno'}</p>
@@ -73,7 +73,7 @@ const InvoiceDetail = () => {
           <p><strong>Konstantní symbol:</strong> {invoice.constantSymbol || 'Není uvedeno'}</p>
         </div>
       </div>
-      <div className="mt-6">
+      <div className="pdf-section">
         <InvoicePDF invoiceNumber={invoice.invoiceNumber} />
       </div>
     </div>

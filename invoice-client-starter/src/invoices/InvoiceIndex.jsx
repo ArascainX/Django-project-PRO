@@ -57,8 +57,13 @@ const InvoiceIndex = () => {
     };
 
     return (
-        <div>
-            <h1 className="mb-2">Seznam faktur <Link to="/invoices/create" className="btn btn-success"><strong> ✚ </strong></Link></h1>
+        <div className="invoice-index">
+            <div className="invoice-header">
+            <h1>Seznam faktur</h1>
+            <Link to="/invoices/create" className="btn btn-success">
+                <strong> ✚ Nová faktura</strong>
+            </Link>
+            </div>
             <form className="mb-3" onSubmit={handleFilterSubmit}>
                 <div className="row g-2">
                     <div className="col">

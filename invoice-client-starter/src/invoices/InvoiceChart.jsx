@@ -98,7 +98,7 @@ const InvoiceChart = () => {
   }, [fromYear, toYear, viewMode]);
 
   return (
-    <div>
+    <div className="invoice-chart">
       <div className="row mb-3">
         <div className="col-md-3">
           <label className="form-label">Zobrazit:</label>
@@ -206,7 +206,7 @@ const InvoiceChart = () => {
             />
           </div>
 
-          <div className="mt-3">
+          <div className="invoice-chart-summary mt-3">
             {viewMode === "monthly" && (
               <>
                 <strong>Celkový součet:</strong>{" "}

@@ -23,7 +23,7 @@ const PersonInvoiceChart = ({ personId, onBack }) => {
   const [yearFrom, setYearFrom] = useState(currentYear - 1);
   const [yearTo, setYearTo] = useState(currentYear);
   const [data, setData] = useState(null);
-  const [availableYears, setAvailableYears] = useState([2020, 2021, 2022, 2023, 2024, 2025]);
+  const [availableYears] = useState([2020, 2021, 2022, 2023, 2024, 2025]);
   const [error, setError] = useState(null);
 
   const fetchData = async () => {
@@ -71,6 +71,7 @@ const PersonInvoiceChart = ({ personId, onBack }) => {
       },
     ],
   };
+
   const options = {
     responsive: true,
     plugins: {
@@ -99,16 +100,23 @@ const PersonInvoiceChart = ({ personId, onBack }) => {
   };
 
   return (
-    <div>
-      <h4>{data.personName} — Měsíční vývoj příjmů a výdajů</h4>
+    <div className="person-chart">
+      <h4 className="chart-title">
+        {data.personName} — Měsíční vývoj příjmů a výdajů
+      </h4>
+
       <button className="btn btn-secondary mb-3" onClick={onBack}>
         Zpět na přehled osob
       </button>
 
-      <div className="d-flex gap-3 align-items-center mb-4">
+      <div className="chart-controls mb-4">
         <div>
           <label>Od roku:</label>
-          <select className="form-select" value={yearFrom} onChange={(e) => setYearFrom(Number(e.target.value))}>
+          <select
+            className="form-select"
+            value={yearFrom}
+            onChange={(e) => setYearFrom(Number(e.target.value))}
+          >
             {availableYears.map((y) => (
               <option key={y} value={y}>
                 {y}
@@ -119,7 +127,11 @@ const PersonInvoiceChart = ({ personId, onBack }) => {
 
         <div>
           <label>Do roku:</label>
-          <select className="form-select" value={yearTo} onChange={(e) => setYearTo(Number(e.target.value))}>
+          <select
+            className="form-select"
+            value={yearTo}
+            onChange={(e) => setYearTo(Number(e.target.value))}
+          >
             {availableYears.map((y) => (
               <option key={y} value={y}>
                 {y}
@@ -129,7 +141,7 @@ const PersonInvoiceChart = ({ personId, onBack }) => {
         </div>
       </div>
 
-      <div style={{ maxWidth: "800px", margin: "0 auto" }}>
+      <div className="chart-wrapper">
         <Line data={chartData} options={options} />
       </div>
     </div>
