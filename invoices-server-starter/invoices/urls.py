@@ -1,12 +1,11 @@
 from django.urls import path, include
-
-from .views.invoice_views import mark_invoice_paid
 from .routers import SlashOptionalRouter
 from .views import pdf_views, stripe_views
 from .views.identification_views import SalesByIcoView, PurchasesByIcoView
 from .views.invoice_views import InvoiceViewSet
 from .views.person_views import PersonViewSet
 from .views.registration_views import register_user
+from .views.user_message_views import UserMessageViewSet
 from .views.user_views import current_user
 from .views.stripe_views import (
     stripe_webhook,
@@ -22,7 +21,8 @@ from rest_framework_simplejwt.views import (
 
 router = SlashOptionalRouter()
 router.register(r'persons', PersonViewSet)
-router.register(r'invoices', InvoiceViewSet)
+router.register(r'invoices', InvoiceViewSet)  # zde je InvoiceViewSet včetně mark_paid akce
+router.register(r"user-messages", UserMessageViewSet, basename="user-message")
 
 urlpatterns = [
     path('api/', include(router.urls)),
@@ -30,7 +30,6 @@ urlpatterns = [
     # 📄 Faktury a PDF
     path('api/invoices/<str:invoice_number>/pdf/', pdf_views.generate_invoice_pdf, name='generate_invoice_pdf'),
     path('api/invoices/<str:invoice_number>/', InvoiceViewSet.as_view({'get': 'retrieve'}), name='invoice-detail'),
-    path('api/invoices/<int:pk>/mark-paid/', mark_invoice_paid),
 
     # 🧾 Identifikace
     path('api/identification/<str:ico>/sales/', SalesByIcoView.as_view(), name='sales-by-ico'),
@@ -50,11 +49,10 @@ urlpatterns = [
     path('api/status/<int:user_id>/', check_subscription_status, name='check_subscription_status'),
     path('api/status', subscription_status, name='subscription_status'),
 
-   # Registrace
+    # Registrace
     path('api/register/', register_user, name='register'),
     path('api/me/', current_user, name='current_user'),
 
     # simulace předplatného pro testování
     path("api/simulate-subscription/", stripe_views.simulate_subscription),
-
 ]

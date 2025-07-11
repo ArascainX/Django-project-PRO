@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DevSubscriptionSimulator from "../components/Simulator";
+import UserInbox from "../components/UserInbox";
 
 
 const DashboardStatus = () => {
@@ -111,6 +112,8 @@ const DashboardStatus = () => {
           ) : (
             <div className="inactive">❌ Nemáte aktivní předplatné.</div>
           )}
+          <br />
+          <UserInbox />
         </div> 
       )}
 

@@ -2,6 +2,9 @@ from datetime import date
 
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.mail import send_mail
+from django.conf import settings
+
 
 
 class Countries(models.TextChoices):
@@ -12,6 +15,7 @@ class Countries(models.TextChoices):
 class Person(models.Model):
     objects = None
     name = models.CharField(max_length=100, db_index=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='persons')
     identificationNumber = models.CharField(max_length=50, db_index=True)
     taxNumber = models.CharField(max_length=50, blank=True, null=True)
     accountNumber = models.CharField(max_length=50)
@@ -47,6 +51,21 @@ class Invoice(models.Model):
     paid = models.BooleanField(default=False)
     note = models.TextField(blank=True, null=True)
 
+    def save(self, *args, **kwargs):
+        # zjistit, jestli se mění paid z False na True
+        if self.pk is not None:
+            old = Invoice.objects.get(pk=self.pk)
+            if not old.paid and self.paid:
+                # Faktura byla právě označena jako zaplacená
+                self.send_paid_notification()
+        super().save(*args, **kwargs)
+
+    def send_paid_notification(self):
+        subject = f"Faktura {self.invoiceNumber} byla zaplacena"
+        message = f"Dobrý den,\n\nFaktura číslo {self.invoiceNumber} byla právě označena jako zaplacená."
+        recipient_list = [self.user.email]  # pokud user je majitel faktury
+        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, recipient_list)
+
     @property
     def price_with_vat(self):
         from decimal import Decimal
@@ -67,3 +86,13 @@ class Subscription(models.Model):
 
     def is_active(self):
         return self.active and self.current_period_end >= date.today()
+
+class UserMessage(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="messages")
+    title = models.CharField(max_length=255)
+    content = models.TextField()
+    read = models.BooleanField(default=False)
+    created = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username}: {self.title}"

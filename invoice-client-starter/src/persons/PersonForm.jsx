@@ -28,6 +28,10 @@ const PersonForm = () => {
     note: ""
   });
 
+  // Nové stavy pro chyby
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [formError, setFormError] = useState("");
+
   const [sentState, setSent] = useState(false);
   const [successState, setSuccess] = useState(false);
   const [errorState, setError] = useState(null);
@@ -38,11 +42,51 @@ const PersonForm = () => {
     }
   }, [id]);
 
-  const handleChange = (field) => (e) =>
+  const handleChange = (field) => (e) => {
     setPerson({ ...person, [field]: e.target.value });
+    // Smazat chybu u pole při editaci
+    setFieldErrors((prev) => ({ ...prev, [field]: null }));
+    setFormError("");
+  };
+
+  const validate = () => {
+    const errors = {};
+    if (!person.name.trim()) errors.name = "Osoba nemůže být prázdná";
+    if (!person.street.trim()) errors.street = "Ulice nemůže být prázdná";
+    if (!person.zip.trim()) errors.zip = "PSČ nemůže být prázdné";
+    if (!person.city.trim()) errors.city = "Město nemůže být přázdné";
+    if (!person.identificationNumber.trim()) errors.identificationNumber = "IČO nemůže být prázdné";
+    if (!person.accountNumber.trim()) errors.accountNumber = "Číslo účtu nemůže být přázdné";
+    if (!person.bankCode.trim()) errors.bankCode = "Kód banky nemůže být prázdný";
+    if (!person.telephone.trim()) errors.telephone = "Telefon nemůže být prázdný";
+
+    // Validace emailu
+    if (!person.mail.trim()) {
+      errors.mail = "Email nemůže být prázdný";
+    } else {
+      // Jednoduchý regex pro validaci emailu
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(person.mail)) {
+        errors.mail = "Neplatná emailová adresa";
+      }
+    }
+
+    setFieldErrors(errors);
+
+    if (Object.keys(errors).length > 0) {
+      setFormError("Prosím vyplňte všechna povinná pole správně.");
+      return false;
+    }
+    return true;
+    };
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (!validate()) {
+      return;
+    }
 
     const action = id
       ? apiPut("/api/persons/" + id, person)
@@ -55,7 +99,13 @@ const PersonForm = () => {
         navigate("/persons");
       })
       .catch((error) => {
-        setError(error.message);
+        // Zpracování chyb z backendu (400 apod.)
+        if (error.response && error.response.data) {
+          setFieldErrors(error.response.data);
+          setFormError("Některá pole obsahují chyby.");
+        } else {
+          setError(error.message);
+        }
         setSent(true);
         setSuccess(false);
       });
@@ -65,6 +115,9 @@ const PersonForm = () => {
     <div className="person-form">
       <h1>{id ? "Upravit" : "Vytvořit"} osoba</h1>
       <hr />
+
+      {formError && <div className="error" style={{ marginBottom: "1em" }}>{formError}</div>}
+
       {errorState && <div className="error">{errorState}</div>}
       {sentState && (
         <FlashMessage
@@ -84,7 +137,7 @@ const PersonForm = () => {
             placeholder: "Zadejte číslo bankovního účtu",
           },
           { label: "Kód banky", field: "bankCode", placeholder: "Zadejte kód banky" },
-          { label: "IBAN", field: "iban", placeholder: "Zadejte IBAN" },
+          { label: "IBAN", field: "iban", placeholder: "Zadejte IBAN", required: false },
           { label: "Telefon", field: "telephone", placeholder: "Zadejte telefon" },
           { label: "Mail", field: "mail", placeholder: "Zadejte mail", type: "email" },
           { label: "Ulice", field: "street", placeholder: "Zadejte ulici" },
@@ -105,6 +158,11 @@ const PersonForm = () => {
               required={required}
               minLength={required ? 3 : undefined}
             />
+            {fieldErrors[field] && (
+              <div className="error" style={{ color: "red", marginTop: "0.2em" }}>
+                {fieldErrors[field]}
+              </div>
+            )}
           </div>
         ))}
 

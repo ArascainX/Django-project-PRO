@@ -12,6 +12,10 @@ class PersonViewSet(viewsets.ModelViewSet):
     queryset = Person.objects.filter(hidden=False)
     serializer_class = PersonSerializer
 
+    def get_queryset(self):
+        user = self.request.user
+        return Person.objects.filter(hidden=False, user=user)
+
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
 

@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.admin',
     'corsheaders',
 ]
 
@@ -117,7 +118,19 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=400),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
+
+
+# Email settings
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # pro testování v konzoli
+DEFAULT_FROM_EMAIL = 'leonard10@seznam.cz'
+
+EMAIL_HOST = 'leonard10@seznam.cz'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'tvuj-uzivatel'
+EMAIL_HOST_PASSWORD = 'tvoje-heslo'
+
 

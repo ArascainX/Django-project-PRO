@@ -5,11 +5,11 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.timezone import now
 from rest_framework import viewsets, status
-from rest_framework.decorators import action, permission_classes, api_view
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from ..models import Invoice, Subscription
+from ..models import Invoice, Subscription, UserMessage
 from ..serializers import InvoiceSerializer
 
 
@@ -23,11 +23,10 @@ def user_has_active_subscription(user):
 class InvoiceViewSet(viewsets.ModelViewSet):
     queryset = Invoice.objects.all()
     serializer_class = InvoiceSerializer
-    permission_classes = [IsAuthenticated]  # ✅ přístup jen pro přihlášené
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Můžeš filtrovat faktury jen podle přihlášeného uživatele
-        return Invoice.objects.all()
+        return Invoice.objects.filter(user=self.request.user)
 
     def create(self, request, *args, **kwargs):
         user = request.user
@@ -134,6 +133,22 @@ class InvoiceViewSet(viewsets.ModelViewSet):
             {"year": item["year"], "total": item["total"]} for item in data
         ])
 
+    @action(detail=True, methods=["post"], url_path="mark-paid")
+    def mark_paid(self, request, pk=None):
+        invoice = self.get_object()
+        invoice.paid = True
+        invoice.save(update_fields=["paid"])
+
+        # Vytvoření zprávy do uživatelské schránky
+        UserMessage.objects.create(
+            user=invoice.user,
+            title="Faktura zaplacena",
+            content=f"Faktura č. {invoice.invoiceNumber} byla označena jako zaplacená."
+        )
+
+        return Response({"success": "Faktura označena jako zaplacená."}, status=status.HTTP_200_OK)
+
+
 @receiver(post_save, sender=Invoice)
 def notify_user_invoice_paid(sender, instance, created, **kwargs):
     if not created and instance.paid and instance.user and instance.user.email:
@@ -144,19 +159,3 @@ def notify_user_invoice_paid(sender, instance, created, **kwargs):
             [instance.user.email],
             fail_silently=False,
         )
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def mark_invoice_paid(_, pk):
-    try:
-        invoice = Invoice.objects.get(pk=pk)
-        invoice.paid = True
-        invoice.save()
-        return Response({'message': 'Faktura označena jako zaplacená.'})
-    except Invoice.DoesNotExist:
-        return Response({'error': 'Faktura nenalezena.'}, status=404)
-
-def get_queryset(self):
-    return Invoice.objects.filter(user=self.request.user)
-
-
