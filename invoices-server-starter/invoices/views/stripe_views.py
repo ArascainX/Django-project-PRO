@@ -108,23 +108,22 @@ def check_subscription_status(_, user_id):
 
 
 @api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def subscription_status(request):
-    global subscription
-    user = request.user if request.user.is_authenticated else None
-    if not user:
-        return Response({"active": False})
+    user = request.user
 
     try:
         subscription = DBSubscription.objects.get(user=user)
         return Response({
             "active": subscription.active,
+            "cancelled": subscription.cancelled,
             "current_period_end": subscription.current_period_end.strftime("%d.%m.%Y")
         })
     except DBSubscription.DoesNotExist:
         return Response({
-            "active": subscription.active,
-            "cancelled": subscription.cancelled,
-            "current_period_end": subscription.current_period_end.strftime("%d.%m.%Y")
+            "active": False,
+            "cancelled": False,
+            "current_period_end": None
         })
 
 

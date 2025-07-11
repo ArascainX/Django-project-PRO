@@ -20,7 +20,11 @@ class InvoiceSerializer(serializers.ModelSerializer):
         model = Invoice
         fields = [ 'invoiceNumber', 'seller', 'buyer', 'issued', 'dueDate',
             'product', 'price', 'vat','paid', 'note', '_id' ]
-        read_only_fields = ['user', 'paid']
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        validated_data['user'] = user
+        return super().create(validated_data)
 
     def to_internal_value(self, data):
         if isinstance(data.get('seller'), dict) and '_id' in data['seller']:

@@ -34,7 +34,7 @@ class Person(models.Model):
 class Invoice(models.Model):
     objects = None
     invoiceNumber = models.CharField(max_length=50, unique=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null= True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='invoices')
 
     seller = models.ForeignKey(Person, on_delete=models.PROTECT, related_name='invoices_sold')
     buyer = models.ForeignKey(Person, on_delete=models.PROTECT, related_name='invoices_bought')
