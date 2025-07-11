@@ -44,7 +44,7 @@ const Subscribe = () => {
         <p>✅ Neomezený počet faktur</p>
         <p>🧾 Export faktur do PDF</p>
         <p>📊 Přehledné grafy příjmů a výdajů</p>
-        <p>🌙 Možnost tmavého režimu</p>
+        <p>🔒 Prémiová podpora</p>
       </div>
 
       <button onClick={handleSubscribe} className="subscribe-button">

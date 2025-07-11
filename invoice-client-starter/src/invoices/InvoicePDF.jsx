@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
-import { apiGet } from '../utils/api';
+import { apiGet, getCurrentUser } from '../utils/api';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
@@ -11,12 +11,22 @@ const InvoicePDF = ({ invoiceNumber }) => {
   const [pdfUrl, setPdfUrl] = useState(null);
   const [numPages, setNumPages] = useState(null);
   const [error, setError] = useState(null);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    getCurrentUser()
+      .then((data) => setUser(data))
+      .catch((err) => {
+        console.error("Nepodařilo se načíst uživatele:", err);
+        setUser(null);
+      });
+  }, []);
 
   const downloadInvoice = async () => {
     setLoading(true);
     setError(null);
     try {
-      const blob = await apiGet(`/api/invoices/${encodeURIComponent(invoiceNumber)}/pdf/`, null, 'blob');
+      const blob = await apiGet(`/api/invoices/${encodeURIComponent(invoiceNumber)}/pdf/`, {}, 'blob');
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -27,7 +37,7 @@ const InvoicePDF = ({ invoiceNumber }) => {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Chyba při stahování PDF:', error);
-      setError(error.message.includes('404') ? 'Faktura nenalezena.' : 'Nepodařilo se stáhnout PDF faktury.');
+      setError(error.message.includes('403') ? 'Funkce dostupná pouze pro předplatitele.' : 'Nepodařilo se stáhnout PDF faktury.');
     } finally {
       setLoading(false);
     }
@@ -37,12 +47,12 @@ const InvoicePDF = ({ invoiceNumber }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await apiGet(`/api/invoices/${encodeURIComponent(invoiceNumber)}/pdf/`, null, 'blob');
+      const response = await apiGet(`/api/invoices/${encodeURIComponent(invoiceNumber)}/pdf/`, {}, 'blob');
       const url = window.URL.createObjectURL(response);
       setPdfUrl(url);
     } catch (error) {
       console.error('Chyba při zobrazení PDF:', error);
-      setError('Nepodařilo se zobrazit PDF faktury.');
+      setError(error.message.includes('403') ? 'Funkce dostupná pouze pro předplatitele.' : 'Nepodařilo se zobrazit PDF faktury.');
     } finally {
       setLoading(false);
     }
@@ -51,6 +61,19 @@ const InvoicePDF = ({ invoiceNumber }) => {
   const onDocumentLoadSuccess = ({ numPages }) => {
     setNumPages(numPages);
   };
+
+  if (user === null) {
+    return <p>Načítání údajů o uživateli...</p>;
+  }
+
+  if (!user.has_active_subscription) {
+    return (
+      <div className="alert alert-warning mt-3">
+        <strong>🔒 Prémiová funkce</strong><br />
+        Stažení a zobrazení PDF faktury je dostupné pouze pro předplatitele.
+      </div>
+    );
+  }
 
   return (
     <div className="invoice">
@@ -70,13 +93,13 @@ const InvoicePDF = ({ invoiceNumber }) => {
           {loading ? 'Generuji...' : 'Zobrazit PDF'}
         </button>
       </div>
-      {error && <div className="error">{error}</div>}
+      {error && <div className="error mt-2">{error}</div>}
       {pdfUrl && (
-        <div className="pdf-container">
+        <div className="pdf-container mt-3">
           <Document
             file={pdfUrl}
             onLoadSuccess={onDocumentLoadSuccess}
-            onLoadError={(error) => setError('Chyba při načítání PDF.')}
+            onLoadError={() => setError('Chyba při načítání PDF.')}
             loading="Načítání PDF..."
           >
             {Array.from(new Array(numPages), (el, index) => (
@@ -95,7 +118,7 @@ const InvoicePDF = ({ invoiceNumber }) => {
               setPdfUrl(null);
               setNumPages(null);
             }}
-            className="close-button"
+            className="close-button mt-2"
           >
             Zavřít PDF
           </button>

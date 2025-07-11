@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import PasswordInput from "../components/PasswordInput"; 
 
 const LoginForm = () => {
   const [username, setUsername] = useState("");
@@ -25,32 +25,39 @@ const LoginForm = () => {
       setError(null);
       navigate("/dashboard");
     } else {
-      setError("Neplatné uživatelské jméno nebo heslo");
+      setError("❌ Neplatné uživatelské jméno nebo heslo.");
     }
   };
 
   return (
     <div className="form-container">
-      <h2>Login</h2>
+      <h2>Přihlášení</h2>
       {error && <p className="message error">{error}</p>}
       <form onSubmit={handleLogin}>
         <input
           type="text"
-          placeholder="Email"
+          placeholder="E-mail"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           required
+          autoComplete="username"
+
+
         />
-        <input
+        <PasswordInput
           type="password"
-          placeholder="Password"
+          placeholder="Heslo"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
+          autoComplete="new-password"
+          showStrength={false} 
         />
-        <button type="submit">Submit</button>
+        <button type="submit">Přihlásit se</button>
       </form>
-      <p className="mt-2 text-center">Don't have an account? <a href="/register">Sign up</a></p>
+      <p className="mt-2 text-center">
+        Ještě nemáš účet? <a href="/register">Zaregistruj se</a>
+      </p>
     </div>
   );
 };

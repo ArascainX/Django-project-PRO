@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
-import { apiGet } from "../utils/api";
+import { apiGet, getCurrentUser } from "../utils/api";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -23,8 +23,21 @@ const PersonInvoiceChart = ({ personId, onBack }) => {
   const [yearFrom, setYearFrom] = useState(currentYear - 1);
   const [yearTo, setYearTo] = useState(currentYear);
   const [data, setData] = useState(null);
+  const [user, setUser] = useState(null);
   const [availableYears] = useState([2020, 2021, 2022, 2023, 2024, 2025]);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    // Zjisti, jestli má uživatel aktivní předplatné
+    getCurrentUser()
+      .then((userData) => {
+        setUser(userData);
+      })
+      .catch((err) => {
+        console.error("Nepodařilo se načíst uživatele:", err);
+        setUser(null);
+      });
+  }, []);
 
   const fetchData = async () => {
     try {
@@ -40,10 +53,21 @@ const PersonInvoiceChart = ({ personId, onBack }) => {
   };
 
   useEffect(() => {
-    if (personId) {
+    if (personId && user?.has_active_subscription) {
       fetchData();
     }
-  }, [personId, yearFrom, yearTo]);
+  }, [personId, yearFrom, yearTo, user]);
+
+  if (user === null) return <p>Načítání údajů o uživateli...</p>;
+
+  if (!user.has_active_subscription) {
+    return (
+      <div className="alert alert-warning mt-4">
+        <strong>🔒 Prémiová funkce</strong><br />
+        Tento graf je dostupný pouze pro předplatitele.
+      </div>
+    );
+  }
 
   if (error) return <p>{error}</p>;
   if (!data || !data.monthly) return <p>Načítání dat...</p>;

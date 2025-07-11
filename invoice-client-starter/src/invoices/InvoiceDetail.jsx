@@ -66,7 +66,7 @@ const InvoiceDetail = () => {
         </div>
         <div>
           <h3>Platební informace</h3>
-          <p><strong>Stav platby:</strong> {invoice.paid ? 'Zaplaceno' : 'Nezaplaceno'}</p>
+          <p><strong>Splatnost:</strong> {new Date(invoice.due_date).toLocaleDateString('cs-CZ')}</p>
           <p><strong>Číslo účtu:</strong> {invoice.accountNumber || 'Není uvedeno'}</p>
           <p><strong>Variabilní symbol:</strong> {invoice.variableSymbol || invoice.invoiceNumber || 'Není uvedeno'}</p>
           <p><strong>Specifický symbol:</strong> {invoice.specificSymbol || 'Není uvedeno'}</p>

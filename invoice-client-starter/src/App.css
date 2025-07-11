@@ -5,6 +5,11 @@
   text-align: center;
 }
 
+body.dark-mode {
+    background-color: #121212;
+    color: white;
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;

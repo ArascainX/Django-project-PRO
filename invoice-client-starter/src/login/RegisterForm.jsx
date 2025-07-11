@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-
+import PasswordInput from "../components/PasswordInput";
 
 const RegisterForm = () => {
   const [formData, setFormData] = useState({
@@ -38,7 +38,7 @@ const RegisterForm = () => {
     const data = await res.json();
 
     if (res.ok) {
-      setMessage("✅ Registrace úspěšná, můžeš se přihlásit.");
+      setMessage("✅ Registrace proběhla úspěšně, nyní se můžeš přihlásit.");
       setFormData({ firstName: "", lastName: "", username: "", password: "", confirmPassword: "" });
     } else {
       setMessage(data.error || "❌ Něco se nepovedlo.");
@@ -47,15 +47,15 @@ const RegisterForm = () => {
 
   return (
     <div className="form-container">
-      <h2>Register</h2>
-      <p>Signup now and get full access to our app.</p>
+      <h2>Registrace</h2>
+      <p>Zaregistruj se a získej plný přístup k aplikaci.</p>
       {message && <p className="message">{message}</p>}
       <form onSubmit={handleRegister}>
         <div className="name-fields">
           <input
             type="text"
             name="firstName"
-            placeholder="Firstname"
+            placeholder="Jméno"
             value={formData.firstName}
             onChange={handleChange}
             required
@@ -63,7 +63,7 @@ const RegisterForm = () => {
           <input
             type="text"
             name="lastName"
-            placeholder="Lastname"
+            placeholder="Příjmení"
             value={formData.lastName}
             onChange={handleChange}
             required
@@ -72,30 +72,36 @@ const RegisterForm = () => {
         <input
           type="text"
           name="username"
-          placeholder="Email"
+          placeholder="E-mail"
           value={formData.username}
           onChange={handleChange}
           required
+          autoComplete="username"
         />
-        <input
+        <PasswordInput
           type="password"
           name="password"
-          placeholder="Password"
+          placeholder="Heslo"
           value={formData.password}
           onChange={handleChange}
           required
+          autoComplete="new-password"
+          className="form-container"
         />
-        <input
+        <PasswordInput
           type="password"
           name="confirmPassword"
-          placeholder="Confirm password"
+          placeholder="Potvrď heslo"
           value={formData.confirmPassword}
           onChange={handleChange}
           required
+          autoComplete="new-password"
         />
-        <button type="submit">Submit</button>
+        <button type="submit">Registrovat</button>
       </form>
-      <p className="mt-2 text-center">Already have an account? <a href="/login">Sign in</a></p>
+      <p className="mt-2 text-center">
+        Už máš účet? <a href="/login">Přihlas se</a>
+      </p>
     </div>
   );
 };

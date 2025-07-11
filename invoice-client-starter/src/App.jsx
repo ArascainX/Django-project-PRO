@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import {
   BrowserRouter as Router,
@@ -11,19 +11,29 @@ import {
 import PersonIndex from "./persons/PersonIndex";
 import PersonDetail from "./persons/PersonDetail";
 import PersonForm from "./persons/PersonForm";
-import InvoiceIndex from "./invoices/InvoiceIndex"; 
+import InvoiceIndex from "./invoices/InvoiceIndex";
 import InvoiceDetail from "./invoices/InvoiceDetail";
 import InvoiceForm from "./invoices/InvoiceForm";
 import InvoiceStatistic from "./invoices/InvoiceStatistic";
 
 import Subscribe from "./subscription/Subscribe";
 import SubscriptionSuccess from "./subscription/SubscriptionSuccess";
-import SubscriptionCancelled from "./subscription/SubscriptionCancelled"; 
+import SubscriptionCancelled from "./subscription/SubscriptionCancelled";
 import LoginForm from "./login/LoginForm";
 import RegisterForm from "./login/RegisterForm";
 import Dashboard from "./subscription/DashboardStatus";
+import DarkModeToggle from "./components/DarkModeToggle";
+import { getCurrentUser } from "./utils/api";
 
-export function App() {
+function App() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    getCurrentUser()
+      .then((data) => setUser(data))
+      .catch(() => setUser(null)); // fallback when unauthenticated
+  }, []);
+
   return (
     <Router>
       <div className="container">
@@ -103,7 +113,7 @@ export function App() {
             </ul>
           </div>
         </nav>
-        
+
         <Routes>
           <Route index element={<Navigate to="/persons" />} />
 

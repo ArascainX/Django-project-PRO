@@ -125,6 +125,7 @@ button:focus-visible {
   border-bottom: 2px solid #008ee6;
   padding: 1rem 0;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  border-radius: 0 0 15px 15px;
 }
 
 .navbar-center {
@@ -141,6 +142,7 @@ button:focus-visible {
   list-style: none;
   margin: 0;
   align-items: center;
+  border-radius: 15px;
 }
 
 .nav-item {
@@ -259,7 +261,16 @@ button:focus-visible {
 .form-container .success {
   color: #008ee6;
 }
-
+/* =========================
+   Login & Register 
+   ========================= */
+.form-container input:focus {
+  background-color: #2e4057 !important; 
+  border-color: #fff !important;       
+  box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25) !important;
+  outline: none !important;
+  color: white;
+}
 /* =========================
    DASHBOARD STATUS
    ========================= */

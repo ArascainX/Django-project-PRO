@@ -1,69 +1,131 @@
 const API_URL = "http://localhost:8000";
 
-const fetchData = (url, requestOptions) => {
-    const apiUrl = `${API_URL}${url}`;
+// Refresh token funkce
+const refreshAccessToken = async () => {
+    const refresh = localStorage.getItem("refresh_token");
+    if (!refresh) throw new Error("Chybí refresh token.");
 
-    return fetch(apiUrl, requestOptions)
-        .then((response) => {
-            if (!response.ok) {
-                throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
-            }
+    const res = await fetch(`${API_URL}/api/token/refresh/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh }),
+    });
 
-            if (requestOptions.method === 'GET' && requestOptions.responseType === 'blob') {
-                return response.blob();
-            }
-            if (requestOptions.method !== 'DELETE') {
-                return response.json();
-            }
-        })
-        .catch((error) => {
-            throw error;
-        });
+    if (!res.ok) {
+        // Refresh selhal – odhlásit uživatele
+        localStorage.removeItem("token");
+        localStorage.removeItem("refresh_token");
+        throw new Error("Nelze obnovit přístupový token.");
+    }
+
+    const data = await res.json();
+    localStorage.setItem("token", data.access);
+    return data.access;
 };
 
-export const apiGet = (url, params, responseType) => {
-    const filteredParams = Object.fromEntries(
-        Object.entries(params || {}).filter(([_, value]) => value != null)
-    );
+// Univerzální fetch wrapper s obnovou tokenu
+const fetchData = async (url, requestOptions = {}, responseType = "json", retry = true) => {
+    let token = localStorage.getItem("token");
 
-    const queryString = new URLSearchParams(filteredParams).toString();
-    const apiUrl = queryString ? `${url}?${queryString}` : url;
+    const headers = {
+        ...requestOptions.headers,
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+
+    const apiUrl = `${API_URL}${url}`;
+
+    try {
+        let response = await fetch(apiUrl, {
+            ...requestOptions,
+            headers,
+        });
+
+        // Pokud je token neplatný (např. expiroval)
+        if (response.status === 401 && retry) {
+            try {
+                token = await refreshAccessToken();
+                const retryHeaders = {
+                    ...requestOptions.headers,
+                    Authorization: `Bearer ${token}`,
+                };
+                response = await fetch(apiUrl, {
+                    ...requestOptions,
+                    headers: retryHeaders,
+                });
+            } catch (refreshError) {
+                console.error("Chyba při obnově tokenu:", refreshError);
+                throw refreshError;
+            }
+        }
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status} – ${response.statusText}\n${errorText}`);
+        }
+
+        if (responseType === "blob") {
+            return await response.blob();
+        } else if (responseType === "text") {
+            return await response.text();
+        } else if (responseType === "json") {
+            return await response.json();
+        } else {
+            return response;
+        }
+    } catch (error) {
+        console.error("Fetch error:", error);
+        throw error;
+    }
+};
+
+// GET požadavek s volitelnými parametry
+export const apiGet = (url, params = {}, responseType = "json") => {
+    const queryString = new URLSearchParams(
+        Object.entries(params).filter(([_, value]) => value != null)
+    ).toString();
+
+    const fullUrl = queryString ? `${url}?${queryString}` : url;
 
     const requestOptions = {
         method: "GET",
-        responseType,
     };
 
-    return fetchData(apiUrl, requestOptions);
+    return fetchData(fullUrl, requestOptions, responseType);
 };
 
-export const apiPost = (url, data) => {
-    const requestOptions = {
+// POST požadavek
+export const apiPost = (url, data = {}) => {
+    return fetchData(url, {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
-    };
-
-    return fetchData(url, requestOptions);
+    });
 };
 
-export const apiPut = (url, data) => {
-    const requestOptions = {
+// PUT požadavek
+export const apiPut = (url, data = {}) => {
+    return fetchData(url, {
         method: "PUT",
-        headers: {"Content-Type": "application/json"},
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
-    };
-
-    return fetchData(url, requestOptions);
+    });
 };
 
+// DELETE požadavek
 export const apiDelete = (url) => {
-    const requestOptions = {
+    return fetchData(url, {
         method: "DELETE",
-    };
-
-    return fetchData(url, requestOptions);
+    });
 };
 
-export const getSalesByIco = (ico) => apiGet(`/api/identification/${ico}/sales`);
-export const getPurchasesByIco = (ico) => apiGet(`/api/identification/${ico}/purchases`);
+// Aktuálně přihlášený uživatel
+export const getCurrentUser = () => {
+    return apiGet("/api/me/");
+};
+
+// Konkrétní volání pro prodeje a nákupy dle IČO
+export const getSalesByIco = (ico) =>
+    apiGet(`/api/identification/${ico}/sales`);
+
+export const getPurchasesByIco = (ico) =>
+    apiGet(`/api/identification/${ico}/purchases`);

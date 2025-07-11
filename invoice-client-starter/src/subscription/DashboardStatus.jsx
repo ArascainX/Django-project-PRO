@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import DevSubscriptionSimulator from "../components/Simulace";
+
 
 const DashboardStatus = () => {
   const [username, setUsername] = useState(null);
@@ -42,15 +44,43 @@ const DashboardStatus = () => {
     fetchData();
   }, [navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    navigate("/login");
+    const handleLogout = () => {
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
+      navigate("/login");
+    };
+
+    if (loading) {
+      return <div className="dashboard-status loading">Načítám data...</div>;
+    }
+
+    const handleCancel = async () => {
+    const res = await fetch("http://localhost:8000/api/cancel-subscription/", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+      },
+    });
+    const data = await res.json();
+    if (res.ok) {
+      alert(data.message);
+      setSubscription((prev) => ({ ...prev, active: false, cancelled: true }));
+    }
   };
 
-  if (loading) {
-    return <div className="dashboard-status loading">Načítám data...</div>;
-  }
+  const handleRenew = async () => {
+    const res = await fetch("http://localhost:8000/api/renew-subscription/", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+      },
+    });
+    const data = await res.json();
+    if (res.ok) {
+      alert(data.message);
+      setSubscription((prev) => ({ ...prev, active: true, cancelled: false }));
+    }
+  };
 
   return (
     <div className="dashboard-status">
@@ -64,21 +94,34 @@ const DashboardStatus = () => {
           {subscription.active ? (
             <div className="active">
               ✅ Aktivní předplatné do: <strong>{subscription.current_period_end}</strong>
+              <br />
+              <button className="btn btn-danger mt-2" onClick={handleCancel}>
+                Zrušit předplatné
+              </button>
+            </div>
+          ) : subscription.cancelled ? (
+            <div className="cancelled">
+              ⚠️ Předplatné bylo zrušeno, ale máte přístup do:{" "}
+              <strong>{subscription.current_period_end}</strong>
+              <br />
+              <button className="btn btn-success mt-2" onClick={handleRenew}>
+                Obnovit předplatné
+              </button>
             </div>
           ) : (
-            <div className="inactive">
-              ❌ Nemáte aktivní předplatné.
-            </div>
+            <div className="inactive">❌ Nemáte aktivní předplatné.</div>
           )}
-        </div>
+        </div> 
       )}
+
       <div className="subscribe-advantages">
         <p>✅ Neomezený počet faktur</p>
         <p>🧾 Export faktur do PDF</p>
         <p>📊 Přehledné grafy příjmů a výdajů</p>
-        <p>🌙 Možnost tmavého režimu</p>
+        <p>🔒 Prémiová podpora</p>
       </div>
       <button onClick={handleLogout}>Odhlásit se</button>
+      <DevSubscriptionSimulator />
     </div>
   );
 };
