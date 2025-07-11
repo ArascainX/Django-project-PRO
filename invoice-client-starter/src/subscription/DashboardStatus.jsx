@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import DevSubscriptionSimulator from "../components/Simulace";
+import DevSubscriptionSimulator from "../components/Simulator";
 
 
 const DashboardStatus = () => {

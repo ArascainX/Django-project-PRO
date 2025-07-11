@@ -1,22 +1,54 @@
+from django.core.mail import send_mail
 from django.db.models import Sum
-from django.db.models.functions import ExtractYear
-from django.db.models.functions import TruncMonth
+from django.db.models.functions import ExtractYear, TruncMonth
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.utils.timezone import now
 from rest_framework import viewsets, status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, permission_classes, api_view
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from ..models import Invoice
+from ..models import Invoice, Subscription
 from ..serializers import InvoiceSerializer
+
+
+def user_has_active_subscription(user):
+    try:
+        return Subscription.objects.get(user=user).is_active()
+    except Subscription.DoesNotExist:
+        return False
 
 
 class InvoiceViewSet(viewsets.ModelViewSet):
     queryset = Invoice.objects.all()
     serializer_class = InvoiceSerializer
+    permission_classes = [IsAuthenticated]  # ✅ přístup jen pro přihlášené
+
+    def get_queryset(self):
+        # Můžeš filtrovat faktury jen podle přihlášeného uživatele
+        return Invoice.objects.all()
+
+    def create(self, request, *args, **kwargs):
+        user = request.user
+        is_subscriber = user_has_active_subscription(user)
+
+        if not is_subscriber:
+            invoice_count = Invoice.objects.filter(user=user).count()
+            if invoice_count >= 10:
+                return Response(
+                    {"detail": "Limit 10 faktur pro bezplatný účet."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(user=user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(detail=False, methods=['get'])
     def filter(self, request):
-        queryset = Invoice.objects.all()
+        queryset = self.get_queryset()
         params = request.query_params
 
         if buyer_id := params.get('buyerID'):
@@ -34,9 +66,6 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         if max_price := params.get('maxPrice'):
             queryset = queryset.filter(price__lte=max_price)
 
-        if limit := params.get('limit'):
-            queryset = queryset[:int(limit)]
-
         if name := params.get('name'):
             queryset = queryset.filter(
                 seller__name__icontains=name
@@ -44,14 +73,17 @@ class InvoiceViewSet(viewsets.ModelViewSet):
                 buyer__name__icontains=name
             )
 
+        if limit := params.get('limit'):
+            queryset = queryset[:int(limit)]
+
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
     @action(detail=False, methods=['get'], url_path='statistics')
-    def invoice_statistics(self, _):
+    def invoice_statistics(self, request):
         current_year = now().year
 
-        all_invoices = Invoice.objects.all()
+        all_invoices = self.get_queryset()
         current_year_sum = all_invoices.filter(issued__year=current_year).aggregate(Sum('price'))['price__sum'] or 0
         all_time_sum = all_invoices.aggregate(Sum('price'))['price__sum'] or 0
         invoice_count = all_invoices.count()
@@ -72,7 +104,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
             return Response({"error": "Neplatný parametr roku."}, status=400)
 
         data = (
-            Invoice.objects
+            self.get_queryset()
             .filter(issued__year=year)
             .annotate(month=TruncMonth("issued"))
             .values("month")
@@ -90,9 +122,9 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         return Response(result)
 
     @action(detail=False, methods=["get"], url_path="yearly-summary")
-    def yearly_summary(self, _):
+    def yearly_summary(self, request):
         data = (
-            Invoice.objects
+            self.get_queryset()
             .annotate(year=ExtractYear("issued"))
             .values("year")
             .annotate(total=Sum("price"))
@@ -102,5 +134,29 @@ class InvoiceViewSet(viewsets.ModelViewSet):
             {"year": item["year"], "total": item["total"]} for item in data
         ])
 
+@receiver(post_save, sender=Invoice)
+def notify_user_invoice_paid(sender, instance, created, **kwargs):
+    if not created and instance.paid and instance.user and instance.user.email:
+        send_mail(
+            'Faktura zaplacena',
+            f'Vaše faktura č. {instance.invoiceNumber} byla označena jako zaplacená.',
+            'no-reply@vasedomena.cz',
+            [instance.user.email],
+            fail_silently=False,
+        )
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def mark_invoice_paid(_, pk):
+    try:
+        invoice = Invoice.objects.get(pk=pk)
+        invoice.paid = True
+        invoice.save()
+        return Response({'message': 'Faktura označena jako zaplacená.'})
+    except Invoice.DoesNotExist:
+        return Response({'error': 'Faktura nenalezena.'}, status=404)
+
+def get_queryset(self):
+    return Invoice.objects.filter(user=self.request.user)
 
 

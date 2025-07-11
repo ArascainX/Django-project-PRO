@@ -7,11 +7,9 @@ class PersonSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Person
-        fields = [
-            'name', 'identificationNumber', 'taxNumber', 'accountNumber',
+        fields = [ 'name', 'identificationNumber', 'taxNumber', 'accountNumber',
             'bankCode', 'iban', 'telephone', 'mail', 'street', 'zip',
-            'city', 'country', 'note', '_id'
-        ]
+            'city', 'country', 'note', '_id' ]
 
 class InvoiceSerializer(serializers.ModelSerializer):
     _id = serializers.IntegerField(source="id", read_only=True)
@@ -20,10 +18,9 @@ class InvoiceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Invoice
-        fields = [
-            'invoiceNumber', 'seller', 'buyer', 'issued', 'dueDate',
-            'product', 'price', 'vat', 'note', '_id'
-        ]
+        fields = [ 'invoiceNumber', 'seller', 'buyer', 'issued', 'dueDate',
+            'product', 'price', 'vat','paid', 'note', '_id' ]
+        read_only_fields = ['user', 'paid']
 
     def to_internal_value(self, data):
         if isinstance(data.get('seller'), dict) and '_id' in data['seller']:

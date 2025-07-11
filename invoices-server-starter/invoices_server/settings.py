@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -21,6 +22,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-cnr1)^o2$v7qk8(b%5!68^x-s%^i98d&-+iid9ok9)liu91_)5'
+
+# Stripe API klíče
+STRIPE_SECRET_KEY = "sk_test_51RhvB0ER45SqKnktB6Rr3ijSRAVrvCkWVFCA74oGlgI2AnBiB26sAhrqMwO3eXKAiwcDO2y2nKbSUBPTdEyQh07I00gCztFwjS"  # svůj tajný klíč ze Stripe dashboardu
+STRIPE_PUBLIC_KEY = "pk_test_51RhvB0ER45SqKnktpcFmSkhlKZwhrJHyOQArmZaNrJBRmVtLUP4s6ICqEiMH1l7ckqrmB1UxbYnOVPuPpXpyOqRU00r6r4b1Lx"  # veřejný klíč pro frontend
+STRIPE_PRICE_ID = "price_1RhvXUER45SqKnktHRnH7M7z"  # cena nastavená ve Stripe produktu
+STRIPE_WEBHOOK_SECRET = "whsec_ce0f4340d6af2f570702ed00cc40b7988c73095903ad433f8dcbff9706eb9dbf"
+DOMAIN = "http://localhost:5173"  # nebo tvoje doména později
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -100,3 +109,15 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 APPEND_SLASH = True
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+}
+

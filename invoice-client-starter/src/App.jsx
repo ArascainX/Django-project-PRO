@@ -22,7 +22,6 @@ import SubscriptionCancelled from "./subscription/SubscriptionCancelled";
 import LoginForm from "./login/LoginForm";
 import RegisterForm from "./login/RegisterForm";
 import Dashboard from "./subscription/DashboardStatus";
-import DarkModeToggle from "./components/DarkModeToggle";
 import { getCurrentUser } from "./utils/api";
 
 function App() {

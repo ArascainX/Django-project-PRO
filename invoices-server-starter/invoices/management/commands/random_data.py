@@ -33,7 +33,7 @@ class Command(BaseCommand):
                 identificationNumber=f"{random.randint(10000000, 99999999)}",
                 taxNumber=f"CZ{random.randint(10000000, 99999999)}",
                 accountNumber=fake.bban(),
-                bankCode=str(fake.random_int(min=1000, max=9999)),
+                bankCode=str(fake.random_int(min=8, max=10)),
                 iban=fake.iban(),
                 telephone=fake.phone_number(),
                 mail=fake.company_email(),

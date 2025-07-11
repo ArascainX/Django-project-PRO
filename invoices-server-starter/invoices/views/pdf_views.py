@@ -1,3 +1,4 @@
+import os
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import (
     Paragraph, Table, TableStyle, SimpleDocTemplate, Spacer,
@@ -9,26 +10,40 @@ from reportlab.lib import colors
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from django.http import FileResponse
-from django.conf import settings
-import os, io
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+import io
 import qrcode
-from rest_framework.decorators import api_view
 from babel.numbers import format_currency
 
-from invoices.models import Invoice
+from invoices.models import Invoice, Subscription
 
 # Fonty
-pdfmetrics.registerFont(TTFont(
-    'Poppins', 'invoices/static/fonts/Poppins/Poppins-Regular.ttf'))
-pdfmetrics.registerFont(TTFont(
-    'Poppins-Bold', 'invoices/static/fonts/Poppins/Poppins-Bold.ttf'))
+pdfmetrics.registerFont(TTFont('Poppins', 'invoices/static/fonts/Poppins/Poppins-Regular.ttf'))
+pdfmetrics.registerFont(TTFont('Poppins-Bold', 'invoices/static/fonts/Poppins/Poppins-Bold.ttf'))
 
+# Pomocná funkce pro formátování CZK
 def czk(value):
     return format_currency(value, 'CZK', locale='cs_CZ').replace('\xa0', ' ')
 
 @api_view(['GET'])
-def generate_invoice_pdf(_, invoice_number):
-    invoice = Invoice.objects.get(invoiceNumber=invoice_number)
+@permission_classes([IsAuthenticated])
+def generate_invoice_pdf(request, invoice_number):
+    try:
+        invoice = Invoice.objects.get(invoiceNumber=invoice_number)
+    except Invoice.DoesNotExist:
+        return Response({"detail": "Faktura nenalezena."}, status=404)
+
+    # ✅ Přístup pouze pro předplatitele
+    try:
+        subscription = Subscription.objects.get(user=request.user)
+        if not subscription.is_active():
+            return Response({"detail": "Tato funkce je dostupná pouze pro předplatitele."}, status=403)
+    except Subscription.DoesNotExist:
+        return Response({"detail": "Tato funkce je dostupná pouze pro předplatitele."}, status=403)
+
+    # Vytvoření PDF dokumentu
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
         buffer,
@@ -39,6 +54,7 @@ def generate_invoice_pdf(_, invoice_number):
         bottomMargin=20 * mm
     )
 
+    # Styly
     bold = ParagraphStyle(name='Bold', fontName='Poppins-Bold', fontSize=10)
     normal = ParagraphStyle(name='Normal', fontName='Poppins', fontSize=9, leading=12)
     header_bold = ParagraphStyle(name='HeaderBold', fontName='Poppins-Bold', fontSize=13, alignment=2, leading=16)
@@ -48,9 +64,14 @@ def generate_invoice_pdf(_, invoice_number):
     elements = []
 
     # HLAVICKA
-    logo_path = os.path.join(settings.STATICFILES_DIRS[0], 'logo.png')
+    logo_path = 'invoices/static/logo.png'
+    if os.path.exists(logo_path):
+        logo_img = Image(logo_path, width=60 * mm, height=25 * mm)
+    else:
+        logo_img = ''
+
     header_data = [[
-        Image(logo_path, width=60 * mm, height=25 * mm) if os.path.exists(logo_path) else '',
+        logo_img,
         Paragraph(
             f"FAKTURA č. {invoice.invoiceNumber}<br/><br/>"
             f"Datum vystavení: {invoice.issued.strftime('%d.%m.%Y')}<br/>"
@@ -68,7 +89,7 @@ def generate_invoice_pdf(_, invoice_number):
     elements.append(HRFlowable(color=colors.black, thickness=0.5, width="100%"))
     elements.append(Spacer(1, 10 * mm))
 
-    # DODAVATEL / ODBERATEL - rozdělené
+    # DODAVATEL / ODBERATEL
     data_dodavatel = [
         [Paragraph('Dodavatel', grey_label)],
         [Paragraph(
@@ -93,7 +114,6 @@ def generate_invoice_pdf(_, invoice_number):
 
     table_dodavatel = Table(data_dodavatel, colWidths=[80 * mm], hAlign='LEFT')
     table_odberatel = Table(data_odberatel, colWidths=[80 * mm], hAlign='RIGHT')
-
     two_column_table = Table([[table_dodavatel, table_odberatel]], colWidths=[90 * mm, 90 * mm], hAlign='CENTER')
     elements.append(two_column_table)
     elements.append(Spacer(1, 10 * mm))
@@ -143,23 +163,26 @@ def generate_invoice_pdf(_, invoice_number):
     elements.append(HRFlowable(color=colors.black, thickness=0.5, width="100%"))
     elements.append(Spacer(1, 10 * mm))
 
-    # PLATEBNI UDJE & QR
+    # PLATEBNI ÚDAJE & QR
     elements.append(Paragraph("Údaje k platbě:", bold))
     elements.append(Paragraph(f"Číslo účtu: {invoice.buyer.accountNumber}/{invoice.buyer.bankCode}", normal))
     elements.append(Paragraph(f"Variabilní symbol: {invoice.invoiceNumber}", normal))
     elements.append(Spacer(1, 5 * mm))
 
-    qr = qrcode.make(
+    # ✅ QR kód přímo do paměti (BytesIO)
+    qr_data = (
         f"SPD*1.0*ACC:{invoice.buyer.accountNumber}/{invoice.buyer.bankCode}"
         f"*AM:{float(invoice.price_with_vat):.2f}*CC:CZK"
     )
-    qr_path = os.path.join(settings.MEDIA_ROOT, 'temp_qr.png')
-    qr.save(qr_path)
-    elements.append(Image(qr_path, width=30 * mm, height=30 * mm))
+    qr_img = qrcode.make(qr_data)
+    qr_buffer = io.BytesIO()
+    qr_img.save(qr_buffer, format='PNG')
+    qr_buffer.seek(0)
+    elements.append(Image(qr_buffer, width=30 * mm, height=30 * mm))
     elements.append(Paragraph("QR Platba", normal))
     elements.append(Spacer(1, 10 * mm))
 
-    # PODPIS A PODEKOVANI
+    # PODPIS
     elements.append(Paragraph("Děkujeme za Vaši objednávku!", normal))
     elements.append(Paragraph(invoice.seller.name, bold))
 
