@@ -1,3 +1,4 @@
+from datetime import timezone
 from django.core.mail import send_mail
 from django.db.models import Sum
 from django.db.models.functions import ExtractYear, TruncMonth
@@ -5,9 +6,10 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.timezone import now
 from rest_framework import viewsets, status
-from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from ..models import Invoice, Subscription, UserMessage
 from ..serializers import InvoiceSerializer
@@ -26,7 +28,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Invoice.objects.filter(user=self.request.user)
+        return Invoice.objects.filter(user=self.request.user, is_deleted=False)
 
     def create(self, request, *args, **kwargs):
         user = request.user
@@ -47,7 +49,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def filter(self, request):
-        queryset = self.get_queryset()
+        queryset = self.get_queryset().filter(is_cancelled=False, is_correction=False)
         params = request.query_params
 
         if buyer_id := params.get('buyerID'):
@@ -78,7 +80,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    @action(detail=False, methods=['get'], url_path='statistics')
+    @action(detail=False, methods=["get"], url_path="statistics")
     def invoice_statistics(self, request):
         current_year = now().year
 
@@ -139,7 +141,6 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         invoice.paid = True
         invoice.save(update_fields=["paid"])
 
-        # Vytvoření zprávy do uživatelské schránky
         UserMessage.objects.create(
             user=invoice.user,
             title="Faktura zaplacena",
@@ -148,7 +149,91 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 
         return Response({"success": "Faktura označena jako zaplacená."}, status=status.HTTP_200_OK)
 
+    @action(detail=True, methods=["post"], url_path="cancel")
+    def cancel_invoice(self, request, pk=None):
+        invoice = self.get_object()
+        reason = request.data.get("reason", "").strip()
 
+        if invoice.is_cancelled:
+            return Response({"detail": "Faktura už je stornovaná."}, status=400)
+
+        # Označení faktury jako stornované
+        invoice.is_archived = True
+        invoice.is_deleted = False
+        invoice.is_cancelled = True
+        invoice.cancellation_reason = reason
+        invoice.note = (invoice.note or "") + f"\nSTORNO: {reason}"
+        invoice.save()
+
+        # Vytvoření dobropisu
+        Invoice.objects.create(
+            user=invoice.user,
+            seller=invoice.buyer,
+            buyer=invoice.seller,
+            invoiceNumber=f"DOBROPIS-{invoice.invoiceNumber}",
+            issued=now().date(),
+            dueDate=invoice.dueDate,
+            product=f"Dobropis k faktuře {invoice.invoiceNumber}",
+            price=-invoice.price,
+            vat=invoice.vat,
+            paid=True,
+            note=f"Dobropis k faktuře {invoice.invoiceNumber} (storno důvod: {reason})",
+            is_archived=True,
+            is_deleted=False,
+            is_correction=True,
+            cancelled_invoice=invoice
+        )
+
+        return Response({"message": "Faktura byla stornována a vytvořen dobropis."})
+
+    @action(detail=True, methods=["post"], url_path="correct")
+    def correct_invoice(self, request, pk=None):
+        original = self.get_object()
+
+        if not original.is_sent:
+            return Response({"detail": "Nelze opravit neodeslanou fakturu."}, status=400)
+
+        try:
+            amount = float(request.data.get("amount", 0))
+        except (ValueError, TypeError):
+            return Response({"detail": "Zadejte platnou částku."}, status=400)
+
+        if amount == 0:
+            return Response({"detail": "Částka opravného dokladu nesmí být 0."}, status=400)
+
+        correction = Invoice.objects.create(
+            invoiceNumber=f"DOBROPIS-{original.invoiceNumber}",
+            user=original.user,
+            seller=original.seller,
+            buyer=original.buyer,
+            issued=now().date(),
+            dueDate=original.dueDate,
+            product=f"Oprava faktury č. {original.invoiceNumber}",
+            price=amount,
+            vat=original.vat,
+            paid=True,
+            note="Opravný daňový doklad",
+            is_sent=True,
+            is_accounted=True,
+            is_correction=True,
+            corrected_invoice=original,
+        )
+
+        return Response(InvoiceSerializer(correction).data, status=201)
+
+    @action(detail=False, methods=["get"], url_path="archived")
+    def archived_invoices(self, request):
+        queryset = self.get_queryset().filter(is_cancelled=True, is_deleted=False)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["get"], url_path="deleted")
+    def deleted_invoices(self, request):
+        queryset = self.get_queryset().filter(is_correction=True, is_deleted=False)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+# 📩 Email notifikace při označení jako zaplacená
 @receiver(post_save, sender=Invoice)
 def notify_user_invoice_paid(sender, instance, created, **kwargs):
     if not created and instance.paid and instance.user and instance.user.email:
@@ -159,3 +244,27 @@ def notify_user_invoice_paid(sender, instance, created, **kwargs):
             [instance.user.email],
             fail_silently=False,
         )
+
+# ♻️ Obnovit fakturu z archivu
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def restore_invoice(request, pk):
+    try:
+        invoice = Invoice.objects.get(pk=pk, user=request.user, is_archived=True)
+        invoice.is_archived = False
+        invoice.save()
+        return Response({"message": "Faktura byla obnovena."})
+    except Invoice.DoesNotExist:
+        return Response({"error": "Faktura nenalezena nebo není archivovaná."}, status=404)
+
+# ❌ Trvalé odstranění
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def destroy_invoice(request, pk):
+    try:
+        invoice = Invoice.objects.get(pk=pk)
+        invoice.delete()
+        return Response({"message": "Faktura byla trvale odstraněna."})
+    except Invoice.DoesNotExist:
+        return Response({"error": "Faktura nebyla nalezena."}, status=404)
+

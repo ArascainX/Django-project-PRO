@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timezone
 
 from django.db import models
 from django.contrib.auth.models import User
@@ -50,13 +50,49 @@ class Invoice(models.Model):
     vat = models.DecimalField(max_digits=5, decimal_places=2)
     paid = models.BooleanField(default=False)
     note = models.TextField(blank=True, null=True)
+    hidden = models.BooleanField(default=False, db_index=True)
+    is_deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(blank=True, null=True)
+    is_archived = models.BooleanField(default=False)
+    is_sent = models.BooleanField(default=False)  # Zda byla faktura odeslána
+    is_accounted = models.BooleanField(default=False)  # Zda byla zaúčtována
+
+    is_cancelled = models.BooleanField(default=False)  # Pokud byla zrušena
+    cancellation_reason = models.TextField(blank=True, null=True)
+    cancelled_invoice = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="storno_of"
+    )
+
+    is_correction = models.BooleanField(default=False)  # Opravný doklad (dobropis)
+    corrected_invoice = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="corrections"
+    )
+
+    def restore(self):
+        self.is_deleted = False
+        self.deleted_at = None
+        self.save()
+
+    def archive(self):
+        self.is_archived = True
+        self.save()
+
+    def unarchive(self):
+        self.is_archived = False
+        self.save()
 
     def save(self, *args, **kwargs):
-        # zjistit, jestli se mění paid z False na True
-        if self.pk is not None:
+        if self.pk:
             old = Invoice.objects.get(pk=self.pk)
             if not old.paid and self.paid:
-                # Faktura byla právě označena jako zaplacená
                 self.send_paid_notification()
         super().save(*args, **kwargs)
 

@@ -11,20 +11,30 @@ const InvoiceDetail = () => {
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
 
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [showCorrectModal, setShowCorrectModal] = useState(false);
+  const [correctAmount, setCorrectAmount] = useState("");
+
   useEffect(() => {
+    if (!id) {
+      setError("Chybí ID faktury.");
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     apiGet(`/api/invoices/${encodeURIComponent(id)}`)
       .then((data) => {
-        console.log('Načtená faktura:', data);
         setInvoice(data);
         setLoading(false);
       })
       .catch((err) => {
-        console.error('Chyba při načítání faktury:', err);
-        setError(err.message.includes('404') ? 'Faktura nenalezena.' : 'Nepodařilo se načíst fakturu.');
+        setError(err.message.includes("404") ? "Faktura nenalezena." : "Nepodařilo se načíst fakturu.");
         setLoading(false);
       });
   }, [id]);
+
 
   const markAsPaid = async () => {
     try {
@@ -33,6 +43,27 @@ const InvoiceDetail = () => {
       setMessage('✅ Faktura byla označena jako zaplacená.');
     } catch (error) {
       setMessage('❌ Nepodařilo se označit fakturu jako zaplacenou.');
+    }
+  };
+
+  const handleCancel = async () => {
+    try {
+      await apiPost(`/api/invoices/${id}/cancel/`, { reason: cancelReason });
+      setMessage("✅ Faktura byla stornována.");
+      setShowCancelModal(false);
+      apiGet(`/api/invoices/${encodeURIComponent(id)}`).then(setInvoice);
+    } catch (error) {
+      setMessage("❌ Nepodařilo se stornovat fakturu.");
+    }
+  };
+
+  const handleCorrect = async () => {
+    try {
+      await apiPost(`/api/invoices/${id}/correct/`, { amount: correctAmount });
+      setMessage("✅ Dobropis byl vystaven.");
+      setShowCorrectModal(false);
+    } catch (error) {
+      setMessage("❌ Nepodařilo se vystavit dobropis.");
     }
   };
 
@@ -64,7 +95,15 @@ const InvoiceDetail = () => {
 
       <div className="grid">
         <div>
-          <h3>Číslo: {invoice.invoiceNumber}</h3>
+          <h3>
+            Číslo: {invoice.invoiceNumber}
+            {invoice.is_cancelled && (
+              <span className="badge bg-warning ms-2">STORNO</span>
+            )}
+            {invoice.is_correction && (
+              <span className="badge bg-info ms-2">DOBROPIS</span>
+            )}
+          </h3>
           <p><strong>Vystavitel:</strong> {invoice.seller?.name || 'Není uvedeno'}</p>
           <p><strong>Odběratel:</strong> {invoice.buyer?.name || 'Není uvedeno'}</p>
           <p><strong>Datum vystavení:</strong> {formatDate(invoice.issued)}</p>
@@ -102,6 +141,55 @@ const InvoiceDetail = () => {
       <div className="pdf-section mt-4">
         <InvoicePDF invoiceNumber={invoice.invoiceNumber} />
       </div>
+
+      <div className="actions mt-4">
+        {invoice.is_sent && !invoice.is_cancelled && !invoice.is_correction && (
+          <>
+            <button className="btn btn-danger me-2" onClick={() => setShowCancelModal(true)}>
+              Stornovat fakturu
+            </button>
+            <button className="btn btn-warning" onClick={() => setShowCorrectModal(true)}>
+              Vystavit dobropis
+            </button>
+          </>
+        )}
+      </div>
+
+      {showCancelModal && (
+        <div className="modal">
+          <div className="modal-content">
+            <h3>Stornovat fakturu</h3>
+            <textarea
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+              placeholder="Zadejte důvod storna"
+              rows={3}
+            />
+            <div className="modal-actions">
+              <button className="btn btn-danger" onClick={handleCancel}>Potvrdit storno</button>
+              <button className="btn btn-secondary" onClick={() => setShowCancelModal(false)}>Zrušit</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCorrectModal && (
+        <div className="modal">
+          <div className="modal-content">
+            <h3>Opravný daňový doklad</h3>
+            <input
+              type="number"
+              value={correctAmount}
+              onChange={(e) => setCorrectAmount(e.target.value)}
+              placeholder="Zadejte částku dobropisu"
+            />
+            <div className="modal-actions">
+              <button className="btn btn-warning" onClick={handleCorrect}>Vystavit dobropis</button>
+              <button className="btn btn-secondary" onClick={() => setShowCorrectModal(false)}>Zrušit</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

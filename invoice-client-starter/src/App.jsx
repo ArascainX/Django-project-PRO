@@ -15,6 +15,8 @@ import InvoiceIndex from "./invoices/InvoiceIndex";
 import InvoiceDetail from "./invoices/InvoiceDetail";
 import InvoiceForm from "./invoices/InvoiceForm";
 import InvoiceStatistic from "./invoices/InvoiceStatistic";
+import Archive from "./invoices/Archive";
+import CreditNote from "./invoices/CreditNote";
 
 import Subscribe from "./subscription/Subscribe";
 import SubscriptionSuccess from "./subscription/SubscriptionSuccess";
@@ -27,11 +29,19 @@ import { getCurrentUser } from "./utils/api";
 function App() {
   const [user, setUser] = useState(null);
 
-  useEffect(() => {
-    getCurrentUser()
-      .then((data) => setUser(data))
-      .catch(() => setUser(null)); // fallback when unauthenticated
-  }, []);
+useEffect(() => {
+  getCurrentUser()
+    .then((data) => {
+      if (!data) {
+        // Uživatelské přihlášení selhalo – přesměruj nebo skryj chráněné části
+        setUser(null);
+      } else {
+        setUser(data);
+      }
+    })
+    .catch(() => setUser(null));
+}, []);
+
 
   return (
     <Router>
@@ -130,6 +140,8 @@ function App() {
             <Route path="show/:id" element={<InvoiceDetail />} />
             <Route path="create" element={<InvoiceForm />} />
             <Route path="edit/:id" element={<InvoiceForm />} />
+            <Route path="archive" element={<Archive />} />
+            <Route path="deleted" element={<CreditNote />} />
           </Route>
 
           {/* Statistiky */}

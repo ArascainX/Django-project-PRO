@@ -1,4 +1,4 @@
-import { apiPost } from "../utils/api";
+import { apiPost, apiDelete } from "../utils/api";
 import { useState } from "react";
 
 export default function DevSubscriptionSimulator() {
@@ -23,28 +23,49 @@ export default function DevSubscriptionSimulator() {
     }
   };
 
-  return (
-    <div className="dev-tools mt-4">
-      <h5>🧪 Vývojářské nástroje</h5>
+  const simulateDelete = async () => {
+    if (!window.confirm("Opravdu trvale odstranit fakturu?")) return;
 
-      <button className="btn btn-outline-primary mb-2" onClick={simulate}>
-        Simulovat předplatné
+    try {
+      const res = await apiDelete(`/api/invoices/${invoiceId}/destroy/`);
+      setStatus(res.message || `🗑 Faktura ${invoiceId} odstraněna.`);
+    } catch (error) {
+      const err =
+        error?.response?.data?.error || error?.response?.data?.message || "Chyba při mazání.";
+      setStatus(`❌ ${err}`);
+    }
+  };
+
+  return (
+    <div className="dev-tools mt-4 p-4 border">
+      <h5>🧪 Vývojářské nástroje 🧪</h5>
+
+      <button className="btn btn-outline-primary mb-3" onClick={simulate}>
+        ♻️ Simulovat předplatné
       </button>
 
-      <div className="form-group">
+      <div className="form-group mb-3">
         <label>ID faktury:</label>
         <input
           type="text"
           className="form-control"
           value={invoiceId}
           onChange={(e) => setInvoiceId(e.target.value)}
+          placeholder="Např. 42"
         />
-        <button className="btn btn-outline-success mt-2" onClick={simulatePaid}>
-          Simulovat zaplacení faktury
+      </div>
+
+      <div className="d-flex gap-2 mb-3">
+        <button className="btn btn-outline-success" onClick={simulatePaid}>
+          ✅ Simulovat zaplacení faktury
+        </button>
+
+        <button className="btn btn-outline-danger" onClick={simulateDelete}>
+          🗑 Trvale odstranit fakturu
         </button>
       </div>
 
-      {status && <p className="mt-2 text-success">{status}</p>}
+      {status && <p className="mt-3 text-success">{status}</p>}
     </div>
   );
 }

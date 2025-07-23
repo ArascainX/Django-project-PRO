@@ -21,11 +21,21 @@ class InvoiceSerializer(serializers.ModelSerializer):
     seller = serializers.PrimaryKeyRelatedField(queryset=Person.objects.all())
     buyer = serializers.PrimaryKeyRelatedField(queryset=Person.objects.all())
 
+    corrected_invoice = serializers.PrimaryKeyRelatedField(read_only=True)
+    cancelled_invoice = serializers.PrimaryKeyRelatedField(read_only=True)
+
     class Meta:
         model = Invoice
         fields = [
             'invoiceNumber', 'seller', 'buyer', 'issued', 'dueDate',
-            'product', 'price', 'vat', 'paid', 'note', '_id'
+            'product', 'price', 'vat', 'paid', 'note', '_id',
+
+            # právní status faktury
+            'is_sent', 'is_accounted', 'is_cancelled', 'cancellation_reason',
+            'is_correction', 'corrected_invoice', 'cancelled_invoice',
+
+            # přidáno pro přehlednost a správné filtrování
+            'is_deleted', 'is_archived',
         ]
 
     def create(self, validated_data):
@@ -34,7 +44,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
     def to_internal_value(self, data):
-        # Pokud frontend pošle nested objekt s _id, extrahujeme jej
+        # Pokud frontend pošle nested seller/buyer s _id
         if isinstance(data.get('seller'), dict) and '_id' in data['seller']:
             data['seller'] = data['seller']['_id']
         if isinstance(data.get('buyer'), dict) and '_id' in data['buyer']:
@@ -45,8 +55,16 @@ class InvoiceSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         data['seller'] = PersonSerializer(instance.seller).data
         data['buyer'] = PersonSerializer(instance.buyer).data
-        return data
 
+        # Dobropis: zobrazíme info, ke které faktuře se vztahuje
+        if instance.corrected_invoice:
+            data['corrected_invoice_number'] = instance.corrected_invoice.invoiceNumber
+
+        # Storno: zobrazíme info, ke které faktuře se vztahuje
+        if instance.cancelled_invoice:
+            data['cancelled_invoice_number'] = instance.cancelled_invoice.invoiceNumber
+
+        return data
 
 class UserMessageSerializer(serializers.ModelSerializer):
     _id = serializers.IntegerField(source="id", read_only=True)

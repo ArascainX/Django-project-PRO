@@ -1,161 +1,130 @@
-import React, { useEffect, useState } from "react";
-import { apiGet, apiDelete } from "../utils/api";
-import InvoiceTable from "./InvoiceTable";
+import React, { useState } from "react";
+import ActiveInvoices from "./ActiveInvoices";
+import Archive from "./Archive";
+import CreditNote from "./CreditNote";
 import { Link } from "react-router-dom";
+import { apiPost } from "../utils/api";
 
-const defaultFilters = {
+const TABS = {
+  ACTIVE: "active",
+  ARCHIVED: "archived",
+  DELETED: "deleted",
+};
+
+const InvoiceIndex = () => {
+  const [activeTab, setActiveTab] = useState(TABS.ACTIVE);
+  const [filters, setFilters] = useState({
     buyerID: "",
     sellerID: "",
     product: "",
     minPrice: "",
     maxPrice: "",
-    limit: ""
-};
+    limit: "",
+  });
 
-const InvoiceIndex = () => {
-    const [invoices, setInvoices] = useState([]);
-    const [filters, setFilters] = useState(defaultFilters);
+  const cancelInvoice = async (invoiceId) => {
+    const reason = prompt("Zadejte důvod storna:");
+    if (!reason) return;
 
-    const fetchInvoices = () => {
-        apiGet("/api/invoices/filter", filters)
-            .then((data) => {
-                setInvoices(data);
-            })
-            .catch((error) => {
-                console.error("Chyba při načítání faktur:", error);
-            });
-    };
+    try {
+      await apiPost(`/api/invoices/${invoiceId}/cancel/`, { reason });
+      setFilters({ ...filters }); // refresh aktivních faktur
+    } catch (error) {
+      alert("❌ Nepodařilo se stornovat fakturu.");
+    }
+  };
 
-    useEffect(() => {
-        fetchInvoices();
-        // okamžité načtění dat při  renderu
-    }, [filters]);
+  const handleFilterChange = (e) => {
+    setFilters({ ...filters, [e.target.name]: e.target.value });
+  };
 
-    const handleFilterChange = (e) => {
-        setFilters({ ...filters, [e.target.name]: e.target.value });
-    };
+  const handleFilterSubmit = (e) => {
+    e.preventDefault();
+  };
 
-    const handleFilterSubmit = (e) => {
-        e.preventDefault();
-        fetchInvoices();
-    };
+  const handleShowAll = () => {
+    setFilters({
+      buyerID: "",
+      sellerID: "",
+      product: "",
+      minPrice: "",
+      maxPrice: "",
+      limit: "",
+    });
+  };
 
-    const handleShowAll = () => {
-        setFilters(defaultFilters);
-    };
-
-    const deleteInvoice = (id) => {
-        if (window.confirm("Opravdu chcete fakturu odstranit?")) {
-            apiDelete("/api/invoices/" + id)
-                .then(() => {
-                    fetchInvoices();
-                })
-                .catch((error) => {
-                    console.error("Chyba při mazání faktury:", error);
-                });
-        }
-    };
-
-    return (
-        <div className="invoice-index">
-            <div className="invoice-header">
-            <h1>Seznam faktur</h1>
-            <Link to="/invoices/create" className="btn btn-success">
-                <strong> ✚ Nová faktura</strong>
-            </Link>
-            </div>
+  const renderTab = () => {
+    switch (activeTab) {
+      case TABS.ARCHIVED:
+        return <Archive />;
+      case TABS.DELETED:
+        return <CreditNote />;
+      default:
+        return (
+          <>
             <form className="mb-3" onSubmit={handleFilterSubmit}>
-                <div className="row g-2">
-                    <div className="col">
-                        <input
-                            type="text"
-                            className="form-control"
-                            name="name"
-                            placeholder="Jméno"
-                            value={filters.name}
-                            onChange={handleFilterChange}
-                        />
-                    </div>
-                    <div className="col">
-                        <input
-                            type="text"
-                            className="form-control"
-                            name="buyerID"
-                            placeholder="ID kupujícího"
-                            value={filters.buyerID}
-                            onChange={handleFilterChange}
-                        />
-                    </div>
-                    <div className="col">
-                        <input
-                            type="text"
-                            className="form-control"
-                            name="sellerID"
-                            placeholder="ID prodávajícího"
-                            value={filters.sellerID}
-                            onChange={handleFilterChange}
-                        />
-                    </div>
-                    <div className="col">
-                        <input
-                            type="text"
-                            className="form-control"
-                            name="product"
-                            placeholder="Produkt"
-                            value={filters.product}
-                            onChange={handleFilterChange}
-                        />
-                    </div>
-                    <div className="col">
-                        <input
-                            type="number"
-                            className="form-control"
-                            name="minPrice"
-                            placeholder="Min. cena"
-                            value={filters.minPrice}
-                            onChange={handleFilterChange}
-                        />
-                    </div>
-                    <div className="col">
-                        <input
-                            type="number"
-                            className="form-control"
-                            name="maxPrice"
-                            placeholder="Max. cena"
-                            value={filters.maxPrice}
-                            onChange={handleFilterChange}
-                        />
-                    </div>
-                    <div className="col">
-                        <input
-                            type="number"
-                            className="form-control"
-                            name="limit"
-                            placeholder="Limit"
-                            value={filters.limit}
-                            onChange={handleFilterChange}
-                        />
-                    </div>
-               
-                    <div className="col-auto">
-                        <button
-                            type="button"
-                            className="btn btn-secondary"
-                            onClick={handleShowAll}
-                        >
-                            Reset filtrů
-                        </button>
-                    </div>
+              <div className="row g-2">
+                {["buyerID", "sellerID", "product", "minPrice", "maxPrice", "limit"].map((field) => (
+                  <div className="col" key={field}>
+                    <input
+                      type={field.includes("Price") || field === "limit" ? "number" : "text"}
+                      className="form-control"
+                      name={field}
+                      placeholder={field}
+                      value={filters[field]}
+                      onChange={handleFilterChange}
+                    />
+                  </div>
+                ))}
+                <div className="col-auto">
+                  <button type="button" className="btn btn-secondary" onClick={handleShowAll}>
+                    Reset filtrů
+                  </button>
                 </div>
+              </div>
             </form>
-            <InvoiceTable label="Počet faktur:" items={invoices} deleteInvoice={deleteInvoice} />
-            {invoices.length === 0 && (
-                <div className="alert alert-warning mt-3">
-                    Nebyl nalezen žádný záznam.
-                </div>
-            )}
-        </div>
-    );
+            <ActiveInvoices
+              filters={filters}
+              cancelInvoice={cancelInvoice}
+            />
+          </>
+        );
+    }
+  };
+
+  return (
+    <div className="invoice-index">
+      <div className="invoice-header">
+        <h1>Faktury</h1>
+        <Link to="/invoices/create" className="btn btn-success">
+          ✚ Nová faktura
+        </Link>
+      </div>
+
+      <div className="tab-buttons my-3">
+        <button
+          className={`btn ${activeTab === TABS.ACTIVE ? "btn-primary" : "btn-outline-primary"}`}
+          onClick={() => setActiveTab(TABS.ACTIVE)}
+        >
+          Aktivní
+        </button>
+        <button
+          className={`btn mx-2 ${activeTab === TABS.ARCHIVED ? "btn-primary" : "btn-outline-primary"}`}
+          onClick={() => setActiveTab(TABS.ARCHIVED)}
+        >
+          Archiv
+        </button>
+        <button
+          className={`btn ${activeTab === TABS.DELETED ? "btn-danger" : "btn-outline-danger"}`}
+          onClick={() => setActiveTab(TABS.DELETED)}
+        >
+          Dobropis
+        </button>
+      </div>
+
+      {renderTab()}
+    </div>
+  );
 };
 
 export default InvoiceIndex;

@@ -3,6 +3,10 @@ from .routers import SlashOptionalRouter
 from .views import pdf_views, stripe_views
 from .views.identification_views import SalesByIcoView, PurchasesByIcoView
 from .views.invoice_views import InvoiceViewSet
+from .views.invoice_views import (
+    restore_invoice,
+    destroy_invoice,
+)
 from .views.person_views import PersonViewSet
 from .views.registration_views import register_user
 from .views.user_message_views import UserMessageViewSet
@@ -18,7 +22,6 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
-
 router = SlashOptionalRouter()
 router.register(r'persons', PersonViewSet)
 router.register(r'invoices', InvoiceViewSet)  # zde je InvoiceViewSet včetně mark_paid akce
@@ -30,6 +33,8 @@ urlpatterns = [
     # 📄 Faktury a PDF
     path('api/invoices/<str:invoice_number>/pdf/', pdf_views.generate_invoice_pdf, name='generate_invoice_pdf'),
     path('api/invoices/<str:invoice_number>/', InvoiceViewSet.as_view({'get': 'retrieve'}), name='invoice-detail'),
+    path("api/invoices/<int:pk>/restore/", restore_invoice, name="restore-invoice"),
+    path("api/invoices/<int:pk>/destroy/", destroy_invoice, name="destroy-invoice"),
 
     # 🧾 Identifikace
     path('api/identification/<str:ico>/sales/', SalesByIcoView.as_view(), name='sales-by-ico'),

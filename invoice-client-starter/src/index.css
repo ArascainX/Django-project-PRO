@@ -1076,3 +1076,24 @@ button:focus-visible {
 .person-form input[type="submit"]:hover {
   background-color: #0077c2;
 }
+
+.view-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.invoice-table button {
+  margin-right: 6px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  background: #2e4057;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+.invoice-table button:hover {
+  background: #008ee6;
+}
+
+

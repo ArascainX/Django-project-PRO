@@ -112,8 +112,14 @@ export const apiDelete = (url) => {
 };
 
 // Aktuálně přihlášený uživatel
-export const getCurrentUser = () => {
-  return apiGet("/api/me/");
+export const getCurrentUser = async () => {
+  try {
+    const user = await apiGet("/api/me/");
+    return user;
+  } catch (err) {
+    console.warn("Uživatel není přihlášen nebo token je neplatný.");
+    return null;
+  }
 };
 
 // IČO dotazy
