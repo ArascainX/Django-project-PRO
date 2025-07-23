@@ -28,7 +28,7 @@ const PersonInvoiceChart = ({ personId, onBack }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Zjisti, jestli má uživatel aktivní předplatné
+    console.log("Zvolený personId:", personId); 
     getCurrentUser()
       .then((userData) => {
         setUser(userData);

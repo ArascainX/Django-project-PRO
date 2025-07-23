@@ -40,7 +40,8 @@ class PersonViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='statistics')
     def person_statistics(self, _):
-        persons = Person.objects.filter(hidden=False)
+        user = self.request.user
+        persons = Person.objects.filter(hidden=False, user=user)
         statistics = []
 
         for person in persons:

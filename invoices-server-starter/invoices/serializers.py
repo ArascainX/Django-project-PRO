@@ -31,7 +31,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
             'product', 'price', 'vat', 'paid', 'note', '_id',
 
             # právní status faktury
-            'is_sent', 'is_accounted', 'is_cancelled', 'cancellation_reason',
+            'is_accounted', 'is_cancelled', 'cancellation_reason',
             'is_correction', 'corrected_invoice', 'cancelled_invoice',
 
             # přidáno pro přehlednost a správné filtrování

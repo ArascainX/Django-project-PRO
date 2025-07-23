@@ -43,6 +43,7 @@ urlpatterns = [
     # 💳 Stripe – použij JEN tento endpoint pro create-checkout-session
     path('api/create-checkout-session/', create_checkout_session),
     path('api/stripe/webhook/', stripe_webhook, name='stripe-webhook'),
+    path('stripe-webhook/', stripe_webhook, name='stripe-webhook'),
     path("api/cancel-subscription/", stripe_views.cancel_subscription),
     path("api/renew-subscription/", stripe_views.renew_subscription),
 

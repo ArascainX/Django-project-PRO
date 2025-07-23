@@ -11,6 +11,15 @@ const TABS = {
   DELETED: "deleted",
 };
 
+const FILTER_LABELS = {
+  buyerID: "ID kupujícího",
+  sellerID: "ID prodávajícího",
+  product: "Produkt",
+  minPrice: "Min. cena",
+  maxPrice: "Max. cena",
+  limit: "Limit",
+};
+
 const InvoiceIndex = () => {
   const [activeTab, setActiveTab] = useState(TABS.ACTIVE);
   const [filters, setFilters] = useState({
@@ -70,7 +79,7 @@ const InvoiceIndex = () => {
                       type={field.includes("Price") || field === "limit" ? "number" : "text"}
                       className="form-control"
                       name={field}
-                      placeholder={field}
+                      placeholder={FILTER_LABELS[field]}
                       value={filters[field]}
                       onChange={handleFilterChange}
                     />
@@ -115,7 +124,7 @@ const InvoiceIndex = () => {
           Archiv
         </button>
         <button
-          className={`btn ${activeTab === TABS.DELETED ? "btn-danger" : "btn-outline-danger"}`}
+          className={`btn ${activeTab === TABS.DELETED ? "btn-primary" : "btn-outline-primary"}`}
           onClick={() => setActiveTab(TABS.DELETED)}
         >
           Dobropis

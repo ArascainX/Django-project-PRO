@@ -10,7 +10,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from invoices.models import Subscription as DBSubscription, Subscription
+from invoices.models import Subscription
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -47,63 +47,81 @@ def stripe_webhook(request):
 
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
-    except stripe.error.SignatureVerificationError:
-        print("❌ Neplatný Stripe webhook podpis")
+        print(f"✅ Webhook event constructed: {event['type']}, ID: {event['id']}")
+    except stripe.error.SignatureVerificationError as e:
+        print(f"❌ Neplatný Stripe webhook podpis: {str(e)}")
         return HttpResponse(status=400)
     except Exception as e:
         print(f"❌ Chyba při konstrukci eventu: {str(e)}")
         return HttpResponse(status=400)
 
     if event['type'] == 'checkout.session.completed':
+        print("✅ Webhook: checkout.session.completed přijat")
         session = event['data']['object']
         stripe_subscription_id = session.get("subscription")
         user_id = session.get("metadata", {}).get("user_id")
 
+        print(f"🧪 Získaný subscription ID: {stripe_subscription_id}")
+        print(f"🧪 Metadata user_id: {user_id}")
+        print(f"🧪 Full session metadata: {session.get('metadata', {})}")
+
         if not stripe_subscription_id:
-            print("❌ checkout.session.completed event nemá subscription ID")
+            print("❌ Chybí subscription ID")
+            return HttpResponse(status=400)
+        if not user_id:
+            print("❌ Chybí user_id v metadatech")
             return HttpResponse(status=400)
 
-        stripe_subscription = stripe.Subscription.retrieve(stripe_subscription_id)
-        print(f"🔔 Stripe subscription data: {stripe_subscription}")
+        try:
+            stripe_subscription = stripe.Subscription.retrieve(stripe_subscription_id)
+            print(f"🔔 Načten Stripe subscription: {stripe_subscription}")
 
-        items = stripe_subscription.get('items', {}).get('data', [])
-        if items and 'current_period_end' in items[0]:
-            period_end_timestamp = items[0]['current_period_end']
-        else:
-            print("❌ Subscription nemá current_period_end v items[0]")
+            # Získej current_period_end z items.data[0]
+            if stripe_subscription.get('items') and stripe_subscription['items'].get('data') and len(stripe_subscription['items']['data']) > 0:
+                period_end_timestamp = stripe_subscription['items']['data'][0].get('current_period_end')
+                if not period_end_timestamp:
+                    print("❌ Chybí current_period_end v items.data[0]")
+                    return HttpResponse(status=400)
+            else:
+                print("❌ Žádné položky v subscription.items")
+                return HttpResponse(status=400)
+
+            period_end = datetime.fromtimestamp(period_end_timestamp).date()
+            print(f"📆 Datum konce období: {period_end}")
+
+            user = User.objects.get(id=user_id)
+            Subscription.objects.update_or_create(
+                user=user,
+                defaults={
+                    "stripe_subscription_id": stripe_subscription_id,
+                    "current_period_end": period_end,
+                    "active": True,
+                    "cancelled": False,
+                }
+            )
+            print(f"✅ Uloženo předplatné pro uživatele {user.username}")
+            return HttpResponse(status=200)
+        except User.DoesNotExist as e:
+            print(f"⚠️ Uživatelský účet s ID {user_id} neexistuje: {str(e)}")
             return HttpResponse(status=400)
+        except stripe.error.StripeError as e:
+            print(f"⚠️ Stripe error: {str(e)}")
+            return HttpResponse(status=500)
+        except Exception as e:
+            print(f"❌ Chyba při zpracování webhooku: {str(e)}")
+            return HttpResponse(status=500)
 
-        period_end = datetime.fromtimestamp(period_end_timestamp).date()
-
-
-        if user_id:
-            try:
-                user = User.objects.get(id=user_id)
-                DBSubscription.objects.update_or_create(
-                    user=user,
-                    defaults={
-                        "stripe_subscription_id": stripe_subscription_id,
-                        "current_period_end": period_end,
-                        "active": True,
-                    }
-                )
-                print(f"✅ Uloženo předplatné pro uživatele {user.username}")
-            except User.DoesNotExist:
-                print(f"⚠️ Uživatelský účet s ID {user_id} neexistuje")
-        else:
-            print("⚠️ user_id není k dispozici – pravděpodobně testovací webhook")
-
-
+    print(f"ℹ️ Ignorován nepodporovaný event: {event['type']}")
     return HttpResponse(status=200)
 
 
 @api_view(['GET'])
 def check_subscription_status(_, user_id):
     try:
-        subscription = DBSubscription.objects.get(user_id=user_id)
+        subscription = Subscription.objects.get(user_id=user_id)
         is_active = subscription.active and subscription.current_period_end >= date.today()
         return Response({"active": is_active})
-    except DBSubscription.DoesNotExist:
+    except Subscription.DoesNotExist:
         return Response({"active": False})
 
 
@@ -113,13 +131,13 @@ def subscription_status(request):
     user = request.user
 
     try:
-        subscription = DBSubscription.objects.get(user=user)
+        subscription = Subscription.objects.get(user=user)
         return Response({
             "active": subscription.active,
             "cancelled": subscription.cancelled,
             "current_period_end": subscription.current_period_end.strftime("%d.%m.%Y")
         })
-    except DBSubscription.DoesNotExist:
+    except Subscription.DoesNotExist:
         return Response({
             "active": False,
             "cancelled": False,

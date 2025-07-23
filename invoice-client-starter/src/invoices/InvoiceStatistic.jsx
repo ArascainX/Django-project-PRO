@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { apiGet } from "../utils/api";
+import { apiGet, getCurrentUser } from "../utils/api";
 import InvoiceChart from "./InvoiceChart";  
 import PersonInvoiceChart from "../persons/PersonInvoiceChart";
 
@@ -9,8 +9,11 @@ const InvoiceStatistics = () => {
   const [search, setSearch] = useState("");
   const [error, setError] = useState(null);
   const [selectedPersonId, setSelectedPersonId] = useState(null);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
+    getCurrentUser().then(setUser);
+
     apiGet("/api/invoices/statistics")
       .then(setSummaryStats)
       .catch(() => setError("Chyba při načítání souhrnných statistik."));
@@ -20,9 +23,10 @@ const InvoiceStatistics = () => {
       .catch(() => setError("Chyba při načítání statistik společností."));
   }, []);
 
-  const filteredCompanies = companyStats.filter((c) =>
-    c.personName.toLowerCase().includes(search.toLowerCase())
-  );
+  // Filtrování firem podle uživatele
+  const filteredCompanies = companyStats
+    .filter((c) => user && (c.user === user.id || c.user === user._id))
+    .filter((c) => c.personName.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <div className="invoice-statistics">
@@ -84,13 +88,17 @@ const InvoiceStatistics = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredCompanies.map(({ personId, personName, revenue }) => (
-              <tr key={personId} onClick={() => setSelectedPersonId(personId)} style={{ cursor: 'pointer' }}>
-                <td>{personId}</td>
-                <td>{personName}</td>
-                <td>{revenue.toLocaleString("cs-CZ", {})} Kč</td>
-              </tr>
-            ))}
+            {filteredCompanies.map((company) => {
+              // Podpora obou variant ID
+              const id = company.personId || company._id;
+              return (
+                <tr key={id} onClick={() => setSelectedPersonId(id)} style={{ cursor: 'pointer' }}>
+                  <td>{id}</td>
+                  <td>{company.personName}</td>
+                  <td>{company.revenue.toLocaleString("cs-CZ", {})} Kč</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )}
