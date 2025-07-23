@@ -54,10 +54,9 @@ class Invoice(models.Model):
     is_deleted = models.BooleanField(default=False)
     deleted_at = models.DateTimeField(blank=True, null=True)
     is_archived = models.BooleanField(default=False)
-    is_sent = models.BooleanField(default=False)  # Zda byla faktura odeslána
-    is_accounted = models.BooleanField(default=False)  # Zda byla zaúčtována
+    is_accounted = models.BooleanField(default=False)
 
-    is_cancelled = models.BooleanField(default=False)  # Pokud byla zrušena
+    is_cancelled = models.BooleanField(default=False)
     cancellation_reason = models.TextField(blank=True, null=True)
     cancelled_invoice = models.ForeignKey(
         "self",
@@ -67,7 +66,7 @@ class Invoice(models.Model):
         related_name="storno_of"
     )
 
-    is_correction = models.BooleanField(default=False)  # Opravný doklad (dobropis)
+    is_correction = models.BooleanField(default=False)
     corrected_invoice = models.ForeignKey(
         "self",
         null=True,
@@ -99,7 +98,7 @@ class Invoice(models.Model):
     def send_paid_notification(self):
         subject = f"Faktura {self.invoiceNumber} byla zaplacena"
         message = f"Dobrý den,\n\nFaktura číslo {self.invoiceNumber} byla právě označena jako zaplacená."
-        recipient_list = [self.user.email]  # pokud user je majitel faktury
+        recipient_list = [self.user.email]
         send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, recipient_list)
 
     @property

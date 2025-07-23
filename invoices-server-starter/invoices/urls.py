@@ -9,7 +9,7 @@ from .views.invoice_views import (
 )
 from .views.person_views import PersonViewSet
 from .views.registration_views import register_user
-from .views.user_message_views import UserMessageViewSet
+from .views.user_message_views import UserMessageViewSet, DeleteAllMessagesView
 from .views.user_views import current_user
 from .views.stripe_views import (
     stripe_webhook,
@@ -25,7 +25,7 @@ from rest_framework_simplejwt.views import (
 router = SlashOptionalRouter()
 router.register(r'persons', PersonViewSet)
 router.register(r'invoices', InvoiceViewSet)  # zde je InvoiceViewSet včetně mark_paid akce
-router.register(r"user-messages", UserMessageViewSet, basename="user-message")
+router.register(r"user-messages", UserMessageViewSet, basename="user-messages")
 
 urlpatterns = [
     path('api/', include(router.urls)),
@@ -61,4 +61,8 @@ urlpatterns = [
 
     # simulace předplatného pro testování
     path("api/simulate-subscription/", stripe_views.simulate_subscription),
+
+    #  Smazání uživatelské zprávy
+    path('api/usermessages/delete_all/', DeleteAllMessagesView.as_view(), name='delete_all_messages'),
+
 ]

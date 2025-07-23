@@ -1,15 +1,15 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from ..models import UserMessage
 from ..serializers import UserMessageSerializer
 
 
-class UserMessageViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    API endpoint pro zobrazení zpráv (schránky) aktuálně přihlášeného uživatele.
-    Umožňuje pouze čtení zpráv a označení zprávy jako přečtené.
-    """
+class UserMessageViewSet(viewsets.ModelViewSet):
+    queryset = UserMessage.objects.all()
     serializer_class = UserMessageSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -17,15 +17,17 @@ class UserMessageViewSet(viewsets.ReadOnlyModelViewSet):
         # Vrací zprávy aktuálního uživatele, seřazené od nejnovějších
         return UserMessage.objects.filter(user=self.request.user).order_by("-created")
 
-    @action(detail=True, methods=["post"], url_path="mark-read")
-    def mark_read(self, request, pk=None):
-        """
-        Označí zprávu jako přečtenou (read=True).
-        """
-        try:
-            message = self.get_queryset().get(pk=pk)
-            message.read = True
-            message.save(update_fields=["read"])
-            return Response({"success": "Zpráva označena jako přečtená."}, status=status.HTTP_200_OK)
-        except UserMessage.DoesNotExist:
-            return Response({"error": "Zpráva nenalezena."}, status=status.HTTP_404_NOT_FOUND)
+    @action(detail=False, methods=['delete'])
+    def delete_all(self, request):
+        user_messages = UserMessage.objects.filter(user=request.user)
+        count = user_messages.count()
+        user_messages.delete()
+        return Response({'deleted': count}, status=status.HTTP_204_NO_CONTENT)
+
+class DeleteAllMessagesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, *args, **kwargs):
+        UserMessage.objects.filter(user=request.user).delete()
+        return Response({"detail": "Všechny zprávy byly smazány."}, status=status.HTTP_204_NO_CONTENT)
+

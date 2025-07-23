@@ -102,8 +102,10 @@ const DashboardStatus = () => {
             </div>
           ) : subscription.cancelled ? (
             <div className="cancelled">
-              ⚠️ Předplatné bylo zrušeno, ale máte přístup do:{" "}
+              ⚠️ Předplatné bylo zrušeno. Přístup lze obnovit zdarma do:{" "}
               <strong>{subscription.current_period_end}</strong>
+              <br />
+              <small> Po tomto datu bude přístup omezen, pokud nebude předplatné <strong>OBNOVENO</strong>.</small>
               <br />
               <button className="btn btn-success mt-2" onClick={handleRenew}>
                 Obnovit předplatné

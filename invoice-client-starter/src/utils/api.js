@@ -63,7 +63,13 @@ const fetchData = async (url, requestOptions = {}, responseType = "json", retry 
 
     if (responseType === "blob") return await response.blob();
     if (responseType === "text") return await response.text();
-    if (responseType === "json") return await response.json();
+    if (responseType === "json") {
+    if (response.status === 204) {
+        return null;
+      }
+      return await response.json();
+    }
+
     return response;
   } catch (error) {
     console.error("Fetch error:", error);
