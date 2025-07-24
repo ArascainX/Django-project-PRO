@@ -52,6 +52,7 @@ class Invoice(models.Model):
     note = models.TextField(blank=True, null=True)
     hidden = models.BooleanField(default=False, db_index=True)
     is_deleted = models.BooleanField(default=False)
+    is_sent = models.BooleanField(default=False)
     deleted_at = models.DateTimeField(blank=True, null=True)
     is_archived = models.BooleanField(default=False)
     is_accounted = models.BooleanField(default=False)

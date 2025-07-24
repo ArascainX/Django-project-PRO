@@ -11,11 +11,6 @@ const InvoiceDetail = () => {
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
 
-  const [showCancelModal, setShowCancelModal] = useState(false);
-  const [cancelReason, setCancelReason] = useState("");
-  const [showCorrectModal, setShowCorrectModal] = useState(false);
-  const [correctAmount, setCorrectAmount] = useState("");
-
   useEffect(() => {
     if (!id) {
       setError("Chybí ID faktury.");
@@ -35,35 +30,13 @@ const InvoiceDetail = () => {
       });
   }, [id]);
 
-
   const markAsPaid = async () => {
     try {
-      const res = await apiPost(`/api/invoices/${id}/mark-paid/`);
+      await apiPost(`/api/invoices/${id}/mark-paid/`);
       setInvoice({ ...invoice, paid: true });
       setMessage('✅ Faktura byla označena jako zaplacená.');
-    } catch (error) {
+    } catch {
       setMessage('❌ Nepodařilo se označit fakturu jako zaplacenou.');
-    }
-  };
-
-  const handleCancel = async () => {
-    try {
-      await apiPost(`/api/invoices/${id}/cancel/`, { reason: cancelReason });
-      setMessage("✅ Faktura byla stornována.");
-      setShowCancelModal(false);
-      apiGet(`/api/invoices/${encodeURIComponent(id)}`).then(setInvoice);
-    } catch (error) {
-      setMessage("❌ Nepodařilo se stornovat fakturu.");
-    }
-  };
-
-  const handleCorrect = async () => {
-    try {
-      await apiPost(`/api/invoices/${id}/correct/`, { amount: correctAmount });
-      setMessage("✅ Dobropis byl vystaven.");
-      setShowCorrectModal(false);
-    } catch (error) {
-      setMessage("❌ Nepodařilo se vystavit dobropis.");
     }
   };
 
@@ -78,6 +51,12 @@ const InvoiceDetail = () => {
   const formatDate = (value) => {
     if (!value) return 'Není uvedeno';
     return new Date(value).toLocaleDateString('cs-CZ');
+  };
+
+  // Funkce vyčistí poznámku od storno důvodu
+  const cleanNote = (note) => {
+    if (!note) return "Žádná";
+    return note.replace(/\n?STORNO:.*$/s, "").trim() || "Žádná";
   };
 
   if (loading) return <div className="invoice loading">Načítání...</div>;
@@ -98,10 +77,24 @@ const InvoiceDetail = () => {
           <h3>
             Číslo: {invoice.invoiceNumber}
             {invoice.is_cancelled && (
-              <span className="badge bg-warning ms-2">STORNO</span>
-            )}
+               <span
+                  className="badge ms-2"
+                  style={{
+                    backgroundColor: '#ff9800',
+                  }}
+                >
+                  STORNO
+                </span>
+              )}
             {invoice.is_correction && (
-              <span className="badge bg-info ms-2">DOBROPIS</span>
+               <span
+                  className="badge ms-2"
+                  style={{
+                    backgroundColor:  '#008ee6',
+                  }}
+                >
+                  STORNO
+                </span>
             )}
           </h3>
           <p><strong>Vystavitel:</strong> {invoice.seller?.name || 'Není uvedeno'}</p>
@@ -111,7 +104,7 @@ const InvoiceDetail = () => {
           <p><strong>Produkt:</strong> {invoice.product || 'Není uvedeno'}</p>
           <p><strong>Cena:</strong> {formatPrice(invoice.price)}</p>
           <p><strong>DPH:</strong> {invoice.vat ? `${invoice.vat} %` : 'Není uvedeno'}</p>
-          <p><strong>Poznámka:</strong> {invoice.note || 'Žádná'}</p>
+          <p><strong>Poznámka:</strong> {cleanNote(invoice.note)}</p>
         </div>
 
         <div>
@@ -138,58 +131,60 @@ const InvoiceDetail = () => {
         </div>
       </div>
 
+        {/* Žlutý podklad s důvodem storna */}
+      {invoice.is_cancelled && invoice.cancellation_reason && (
+        <div
+          style={{
+            backgroundColor: '#ff9800',
+            color: 'white',
+            padding: '10px',
+            borderRadius: '5px',
+            marginTop: '15px',
+            fontWeight: 'bold',
+            textAlign: 'center',
+            whiteSpace: 'pre-wrap',
+          }}
+          role="alert"
+        >
+          STORNO
+          <br />
+          <small style={{ fontWeight: 'normal', fontSize: '1.1em' }}>
+            Důvod storna: {invoice.cancellation_reason || 'Bez uvedeného důvodu'}
+          </small>
+        </div>
+      )}
+
+      {/* Modrý podklad pouze pro dobropis */}
+      {invoice.is_correction && (
+        <div
+          style={{
+            backgroundColor: "#008ee6",
+            color: "white",
+            padding: "10px",
+            borderRadius: "5px",
+            marginTop: "15px",
+            fontWeight: "bold",
+            textAlign: "center",
+            whiteSpace: 'pre-wrap',
+          }}
+          role="alert"
+        >
+          DOBROPIS
+          {invoice.note && (
+            <>
+              <br />
+              <small style={{ fontWeight: 'normal', fontSize: '1.1em' }}>
+              {invoice.note}
+              </small>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* PDF sekce */}
       <div className="pdf-section mt-4">
         <InvoicePDF invoiceNumber={invoice.invoiceNumber} />
       </div>
-
-      <div className="actions mt-4">
-        {invoice.is_sent && !invoice.is_cancelled && !invoice.is_correction && (
-          <>
-            <button className="btn btn-danger me-2" onClick={() => setShowCancelModal(true)}>
-              Stornovat fakturu
-            </button>
-            <button className="btn btn-warning" onClick={() => setShowCorrectModal(true)}>
-              Vystavit dobropis
-            </button>
-          </>
-        )}
-      </div>
-
-      {showCancelModal && (
-        <div className="modal">
-          <div className="modal-content">
-            <h3>Stornovat fakturu</h3>
-            <textarea
-              value={cancelReason}
-              onChange={(e) => setCancelReason(e.target.value)}
-              placeholder="Zadejte důvod storna"
-              rows={3}
-            />
-            <div className="modal-actions">
-              <button className="btn btn-danger" onClick={handleCancel}>Potvrdit storno</button>
-              <button className="btn btn-secondary" onClick={() => setShowCancelModal(false)}>Zrušit</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showCorrectModal && (
-        <div className="modal">
-          <div className="modal-content">
-            <h3>Opravný daňový doklad</h3>
-            <input
-              type="number"
-              value={correctAmount}
-              onChange={(e) => setCorrectAmount(e.target.value)}
-              placeholder="Zadejte částku dobropisu"
-            />
-            <div className="modal-actions">
-              <button className="btn btn-warning" onClick={handleCorrect}>Vystavit dobropis</button>
-              <button className="btn btn-secondary" onClick={() => setShowCorrectModal(false)}>Zrušit</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

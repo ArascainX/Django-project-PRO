@@ -1,4 +1,6 @@
+from crispy_forms.templatetags.crispy_forms_field import is_select
 from rest_framework import serializers
+from django.contrib.auth.models import User
 
 from .models import Person, Invoice, UserMessage
 
@@ -33,7 +35,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
 
             # právní status faktury
             'is_accounted', 'is_cancelled', 'cancellation_reason',
-            'is_correction', 'corrected_invoice', 'cancelled_invoice',
+            'is_correction', 'corrected_invoice', 'cancelled_invoice', 'is_sent',
 
             # přidáno pro přehlednost a správné filtrování
             'is_deleted', 'is_archived',
@@ -68,10 +70,17 @@ class InvoiceSerializer(serializers.ModelSerializer):
         return data
 
 
+class UserSerializer(serializers.ModelSerializer):
+    _id = serializers.IntegerField(source="id", read_only=True)
+
+    class Meta:
+        model = User
+        fields = ['_id', 'username', 'email', 'is_superuser', 'is_staff']
+
+
 class UserMessageSerializer(serializers.ModelSerializer):
     _id = serializers.IntegerField(source="id", read_only=True)
 
     class Meta:
         model = UserMessage
         fields = ["_id", "title", "content", "read", "created"]
-

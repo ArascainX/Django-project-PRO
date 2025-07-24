@@ -58,7 +58,14 @@ const CreditNote = () => {
                   <td>{idx + 1}</td>
                   <td>{inv.invoiceNumber}</td>
                   <td>{inv.product}</td>
-                  <td>{Number(inv.price).toFixed(2)} Kč</td>
+                 <td>
+                    {inv.price < 0 ? " - " : ""}
+                    {Math.abs(Number(inv.price)).toLocaleString("cs-CZ", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}{" "}
+                    Kč
+                  </td>
                   <td>{new Date(inv.issued).toLocaleDateString("cs-CZ")}</td>
                   <td>
                     <Link

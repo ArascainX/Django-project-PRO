@@ -1,6 +1,6 @@
 from datetime import timezone
 from django.core.mail import send_mail
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from django.db.models.functions import ExtractYear, TruncMonth
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -177,7 +177,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
             price=-invoice.price,
             vat=invoice.vat,
             paid=True,
-            note=f"Dobropis k faktuře {invoice.invoiceNumber} (storno důvod: {reason})",
+            note=f"Dobropis k faktuře {invoice.invoiceNumber} (Důvod storna: {reason})",
             is_archived=True,
             is_deleted=False,
             is_correction=True,
@@ -223,7 +223,11 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="archived")
     def archived_invoices(self, request):
-        queryset = self.get_queryset().filter(is_cancelled=True, is_deleted=False)
+        queryset = self.get_queryset().filter(
+            is_archived=True,  # ✔️ skutečně archivované
+            is_cancelled=True,  # ✔️ stornované
+            is_deleted=False  # ✔️ nepřekryté smazáním
+        )
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
@@ -252,8 +256,23 @@ def restore_invoice(request, pk):
     try:
         invoice = Invoice.objects.get(pk=pk, user=request.user, is_archived=True)
         invoice.is_archived = False
+        invoice.is_deleted = False
+        invoice.is_cancelled = False
         invoice.save()
-        return Response({"message": "Faktura byla obnovena."})
+
+        deleted, _ = Invoice.objects.filter(
+            user=request.user,
+            is_correction=True,
+        ).filter(
+            Q(corrected_invoice=invoice) | Q(cancelled_invoice=invoice)
+        ).delete()
+
+        serializer = InvoiceSerializer(invoice)
+        return Response({
+            "deleted_corrections_count": deleted,
+            "invoice": serializer.data
+        })
+
     except Invoice.DoesNotExist:
         return Response({"error": "Faktura nenalezena nebo není archivovaná."}, status=404)
 

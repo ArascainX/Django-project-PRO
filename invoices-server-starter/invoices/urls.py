@@ -10,7 +10,7 @@ from .views.invoice_views import (
 from .views.person_views import PersonViewSet
 from .views.registration_views import register_user
 from .views.user_message_views import UserMessageViewSet, DeleteAllMessagesView
-from .views.user_views import current_user
+from .views.user_views import current_user, CurrentUserView
 from .views.stripe_views import (
     stripe_webhook,
     create_checkout_session,
@@ -33,7 +33,7 @@ urlpatterns = [
     # 📄 Faktury a PDF
     path('api/invoices/<str:invoice_number>/pdf/', pdf_views.generate_invoice_pdf, name='generate_invoice_pdf'),
     path('api/invoices/<str:invoice_number>/', InvoiceViewSet.as_view({'get': 'retrieve'}), name='invoice-detail'),
-    path("api/invoices/<int:pk>/restore/", restore_invoice, name="restore-invoice"),
+    path("api/invoice-actions/<int:pk>/restore/", restore_invoice, name="restore-invoice"),
     path("api/invoices/<int:pk>/destroy/", destroy_invoice, name="destroy-invoice"),
 
     # 🧾 Identifikace
@@ -58,6 +58,7 @@ urlpatterns = [
     # Registrace
     path('api/register/', register_user, name='register'),
     path('api/me/', current_user, name='current_user'),
+    path('api/user/', CurrentUserView.as_view(), name='current-user'),
 
     # simulace předplatného pro testování
     path("api/simulate-subscription/", stripe_views.simulate_subscription),
