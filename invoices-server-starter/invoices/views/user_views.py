@@ -1,7 +1,9 @@
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
 from invoices.models import Subscription
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -18,5 +20,7 @@ def current_user(request):
         "username": user.username,
         "email": user.email,
         "full_name": f"{user.first_name} {user.last_name}".strip(),
-        "has_active_subscription": has_active_subscription
+        "has_active_subscription": has_active_subscription,
+        "is_superuser": user.is_superuser,
+        "is_staff": user.is_staff,
     })

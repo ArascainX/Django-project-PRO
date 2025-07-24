@@ -24,7 +24,7 @@ from rest_framework_simplejwt.views import (
 
 router = SlashOptionalRouter()
 router.register(r'persons', PersonViewSet)
-router.register(r'invoices', InvoiceViewSet)  # zde je InvoiceViewSet včetně mark_paid akce
+router.register(r'invoices', InvoiceViewSet)
 router.register(r"user-messages", UserMessageViewSet, basename="user-messages")
 
 urlpatterns = [

@@ -5,6 +5,7 @@ import UserInbox from "../components/UserInbox";
 
 
 const DashboardStatus = () => {
+  const [user, setUser] = useState(null);
   const [username, setUsername] = useState(null);
   const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -25,6 +26,7 @@ const DashboardStatus = () => {
         });
         if (!userRes.ok) throw new Error("Nepodařilo se načíst uživatele");
         const userData = await userRes.json();
+        setUser(userData);
         setUsername(userData.full_name || userData.username);
 
         // Načtení stavu předplatného
@@ -36,7 +38,7 @@ const DashboardStatus = () => {
         setSubscription(subData);
       } catch (error) {
         setUsername("Neznámý uživatel");
-        setSubscription({ active: false }); // Výchozí hodnota při chybě
+        setSubscription({ active: false }); 
       } finally {
         setLoading(false);
       }
@@ -126,7 +128,7 @@ const DashboardStatus = () => {
         <p>🔒 Prémiová podpora</p>
       </div>
       <button onClick={handleLogout}>Odhlásit se</button>
-      <DevSubscriptionSimulator />
+      {user?.is_superuser && <DevSubscriptionSimulator />}
     </div>
   );
 };

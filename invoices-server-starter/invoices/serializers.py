@@ -1,4 +1,5 @@
 from rest_framework import serializers
+
 from .models import Person, Invoice, UserMessage
 
 
@@ -66,9 +67,11 @@ class InvoiceSerializer(serializers.ModelSerializer):
 
         return data
 
+
 class UserMessageSerializer(serializers.ModelSerializer):
     _id = serializers.IntegerField(source="id", read_only=True)
 
     class Meta:
         model = UserMessage
         fields = ["_id", "title", "content", "read", "created"]
+

@@ -1100,12 +1100,12 @@ button:focus-visible {
 
 .user-inbox {
   width: 100%;
-  max-width: 600px;
+  max-width: 500px;
   margin: 0 auto;
   border: 1px solid #ccc;
   padding: 16px;
   border-radius: 8px;
-  height: 400px;
+  height: 300px;
   overflow-y: auto;
 }
 .user-inbox li {
@@ -1113,7 +1113,6 @@ button:focus-visible {
   padding: 12px;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
-
   transition: background-color 0.3s ease;
   list-style: none ;
 }
