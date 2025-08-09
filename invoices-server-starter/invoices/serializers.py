@@ -1,4 +1,4 @@
-from crispy_forms.templatetags.crispy_forms_field import is_select
+
 from rest_framework import serializers
 from django.contrib.auth.models import User
 
